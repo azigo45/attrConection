@@ -18,3 +18,15 @@ python attr_connector.py
 In standalone mode the Maya-specific actions (Connect/Disconnect) are disabled
 and placeholder rows are added when using the **Add to** buttons so you can
 inspect the flow of the interface.
+
+## Launching inside Maya
+
+From Maya's Script Editor (Python tab) run:
+
+```python
+import attr_connector
+attr_connector.show_attr_connector_ui()
+```
+
+This will display the styled Attribute Connector window within Maya, with
+full functionality enabled when Maya commands are available.
