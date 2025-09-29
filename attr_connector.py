@@ -313,6 +313,64 @@ class TitleBar(QtWidgets.QWidget):
         self._drag = None
         e.accept()
 
+
+class StyledMessageDialog(QtWidgets.QDialog):
+    def __init__(self, parent=None, title="Message", text="", icon=QtWidgets.QStyle.SP_MessageBoxInformation):
+        super(StyledMessageDialog, self).__init__(parent)
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Dialog)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
+        self.setModal(True)
+
+        outer = QtWidgets.QVBoxLayout(self)
+        outer.setContentsMargins(10, 10, 10, 10)
+        outer.setSpacing(0)
+
+        panel = QtWidgets.QFrame()
+        panel.setObjectName("messagePanel")
+        panel.setStyleSheet(
+            "QFrame#messagePanel{ background:%s; border:1px solid %s; border-radius:12px; }"
+            % (PANEL_BG_RGBA, PANEL_BORDER)
+        )
+        outer.addWidget(panel)
+
+        lay = QtWidgets.QVBoxLayout(panel)
+        lay.setContentsMargins(12, 0, 12, 12)
+        lay.setSpacing(12)
+
+        self.title_bar = TitleBar(self, title)
+        lay.addWidget(self.title_bar)
+
+        content = QtWidgets.QHBoxLayout()
+        content.setContentsMargins(0, 12, 0, 0)
+        content.setSpacing(12)
+        lay.addLayout(content)
+
+        icon_label = QtWidgets.QLabel()
+        icon_label.setFixedSize(48, 48)
+        icon_label.setAlignment(QtCore.Qt.AlignCenter)
+        pix = self.style().standardIcon(icon).pixmap(42, 42)
+        icon_label.setPixmap(pix)
+        content.addWidget(icon_label, 0, QtCore.Qt.AlignTop)
+
+        self.label = QtWidgets.QLabel(text)
+        self.label.setWordWrap(True)
+        self.label.setStyleSheet("color:%s; font-size:12px;" % LABEL_LIGHT)
+        content.addWidget(self.label, 1)
+
+        btn_row = QtWidgets.QHBoxLayout()
+        btn_row.setContentsMargins(0, 0, 0, 0)
+        btn_row.addStretch()
+        self.btn_ok = QtWidgets.QPushButton("OK")
+        self.btn_ok.setStyleSheet(_btn_style_basic())
+        self.btn_ok.clicked.connect(self.accept)
+        btn_row.addWidget(self.btn_ok)
+        lay.addLayout(btn_row)
+
+    @staticmethod
+    def warning(parent, title, text):
+        dlg = StyledMessageDialog(parent, title, text, QtWidgets.QStyle.SP_MessageBoxWarning)
+        dlg.exec_()
+
 # Reorderable table widget (with animation)
 class ReorderableTableWidget(QtWidgets.QTableWidget):
     ANIM_DURATION = 240
@@ -554,7 +612,7 @@ class AttributePickerDialog(QtWidgets.QDialog):
         panel = QtWidgets.QFrame()
         panel.setObjectName("pickerPanel")
         panel.setStyleSheet(
-            "QFrame#pickerPanel{ background:%s; border:1px solid %s; border-top-left-radius:12px; border-top-right-radius:0px; border-bottom-left-radius:12px; border-bottom-right-radius:12px; }"
+            "QFrame#pickerPanel{ background:%s; border:1px solid %s; border-top-left-radius:12px; border-top-right-radius:12px; border-bottom-left-radius:12px; border-bottom-right-radius:12px; }"
             % (PANEL_BG_RGBA, PANEL_BORDER)
         )
         outer.addWidget(panel)
@@ -568,11 +626,12 @@ class AttributePickerDialog(QtWidgets.QDialog):
 
         body = QtWidgets.QWidget()
         body_layout = QtWidgets.QVBoxLayout(body)
-        body_layout.setContentsMargins(12,10,12,12)
+        body_layout.setContentsMargins(0,12,0,12)
         body_layout.setSpacing(12)
         panel_layout.addWidget(body)
 
         top_row = QtWidgets.QHBoxLayout()
+        top_row.setContentsMargins(0,0,0,0)
         lbl = QtWidgets.QLabel("Search:")
         lbl.setStyleSheet("color:%s; background: transparent; border: none;" % LABEL_LIGHT)
         top_row.addWidget(lbl)
@@ -601,6 +660,7 @@ class AttributePickerDialog(QtWidgets.QDialog):
         body_layout.addWidget(self.tree, 1)
 
         btn_row = QtWidgets.QHBoxLayout()
+        btn_row.setContentsMargins(0,0,0,0)
         self.btn_apply = QtWidgets.QPushButton("Apply")
         self.btn_apply.setStyleSheet(_btn_style_basic())
         self.btn_cancel = QtWidgets.QPushButton("Cancel")
@@ -650,7 +710,7 @@ class AttributePickerDialog(QtWidgets.QDialog):
     def _on_apply(self):
         attr = self._get_selected_attr()
         if not attr:
-            QtWidgets.QMessageBox.warning(self, "No attribute", "Please select an attribute first.")
+            StyledMessageDialog.warning(self, "No Attribute", "Please select an attribute first.")
             return
         self.attribute_chosen.emit(attr)
         self.accept()
