@@ -74,39 +74,26 @@ cmds = _maya_cmds
 mel = _maya_mel
 omui = _omui
 
-# Appearance constants (Graphite inspired professional theme)
-PANEL_BG_RGBA = (
-    "qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, "
-    "stop:0 rgba(58,63,72,235), stop:1 rgba(43,47,55,228))"
-)
-TITLE_BG_RGBA = (
-    "qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, "
-    "stop:0 rgba(34,39,47,245), stop:1 rgba(27,31,38,245))"
-)
-TITLE_TEXT = "#E6EBF4"
-ACCENT_COLOR = "#6FA9BC"
-ACCENT_TEXT = "#F4F7FB"
-DARK_1 = "#242830"
-DARK_1_LAYER = "rgba(36,40,47,0.92)"
-DARK_2 = "#2C313A"
-DARK_2_LAYER = "rgba(44,49,58,0.9)"
-PANEL_BORDER = "rgba(120,134,154,140)"
-LABEL_LIGHT = "#E2E7F0"
-TEXT_MUTED = "#9FA7B8"
-INPUT_BG = "#343944"
-INPUT_BG_LAYER = "rgba(52,57,66,0.88)"
-TABLE_BG = "#2B3038"
-TABLE_BG_LAYER = "rgba(43,47,56,0.88)"
-TABLE_HEADER_BG = "#353A45"
-TABLE_GRID = "#3F4653"
-TABLE_SELECTION = "#6FA9BC"
-TABLE_SELECTION_SOFT = "rgba(111,169,188,0.45)"
-TABLE_SELECTION_TEXT = "#0F1216"
-REMOVE_BTN_BG = "#D97B8A"
-REMOVE_BTN_BG_HOVER = "#E68C9A"
-REMOVE_BTN_BG_PRESS = "#B56372"
-WINDOW_NAME = "AttrConnector_Graphite_Theme"
-TABLE_ROW_HEIGHT = 34
+# Appearance constants
+PANEL_BG_RGBA = "rgba(52,58,70,235)"
+TITLE_BG_RGBA = "rgba(64,72,86,255)"
+TITLE_TEXT = "#F5F7FB"
+GRADIENT_START = "#6C8CFF"
+GRADIENT_END   = "#8BA6FF"
+ACCENT_TEXT = "#F9FBFF"
+DARK_1 = "#1f2430"
+DARK_2 = "#282e3b"
+PANEL_BORDER = "#4d5565"
+LABEL_LIGHT = "#E4E8F1"
+TABLE_BG = "#3d4454"
+TABLE_HEADER_BG = "#4f586b"
+TABLE_GRID = "#5a6478"
+TABLE_SELECTION = "#7285aa"
+TABLE_SELECTION_TEXT = "#f5f7fb"
+REMOVE_BTN_BG = "#505a6f"
+REMOVE_BTN_BG_HOVER = "#5f6a81"
+REMOVE_BTN_BG_PRESS = "#3f4758"
+WINDOW_NAME = "AttrConnector_Styled_Final_v4"
 
 # Maya main window helper
 def maya_main_window():
@@ -184,239 +171,100 @@ def categorize_attributes_for_objs(objs):
 
 # Button styles
 def _btn_style_basic():
-    base = QtGui.QColor(ACCENT_COLOR)
-    hover = base.lighter(110).name()
-    pressed = base.darker(110).name()
-    border = base.darker(125).name()
     return """
     QPushButton {
         color: %s;
-        border: 1px solid %s;
-        padding: 10px 22px;
-        border-radius: 16px;
-        background-color: %s;
+        border: 1px solid rgba(255,255,255,0.08);
+        padding: 8px 14px;
+        border-radius: 8px;
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %s, stop:1 %s);
         font-weight:600;
-        font-size: 12px;
-        letter-spacing: 0.6px;
-        font-family: "Segoe UI", "Helvetica Neue", Arial;
-        background-clip: padding;
     }
     QPushButton:hover {
-        background-color: %s;
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %s, stop:1 %s);
     }
     QPushButton:pressed {
-        background-color: %s;
-        padding-top:11px;
-        padding-bottom:9px;
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %s, stop:1 %s);
+        padding-top:9px;
+        padding-bottom:7px;
     }
     QPushButton:focus { outline: none; }
     """ % (
         ACCENT_TEXT,
-        border,
-        base.name(),
-        hover,
-        pressed,
+        GRADIENT_START,
+        GRADIENT_END,
+        QtGui.QColor(GRADIENT_START).lighter(110).name(),
+        QtGui.QColor(GRADIENT_END).lighter(110).name(),
+        QtGui.QColor(GRADIENT_START).darker(115).name(),
+        QtGui.QColor(GRADIENT_END).darker(115).name(),
     )
 
 def _btn_style_gray():
-    base = QtGui.QColor(TABLE_HEADER_BG)
-    hover = base.lighter(108).name()
-    pressed = base.darker(105).name()
-    border = QtGui.QColor(PANEL_BORDER).name()
     return """
     QPushButton {
         color: %s;
-        border: 1px solid %s;
-        background-color: %s;
-        padding: 10px 22px;
-        border-radius: 16px;
-        font-weight:500;
-        font-size: 12px;
-        letter-spacing: 0.4px;
-        font-family: "Segoe UI", "Helvetica Neue", Arial;
+        border: 1px solid rgba(255,255,255,0.05);
+        background: #495264;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-weight:600;
     }
     QPushButton:hover {
-        background-color: %s;
+        background: #566074;
     }
     QPushButton:pressed {
-        background-color: %s;
-        padding-top:11px;
-        padding-bottom:9px;
+        background: #3f4758;
+        padding-top:9px;
+        padding-bottom:7px;
     }
     QPushButton:focus { outline: none; }
-    """ % (LABEL_LIGHT, border, base.name(), hover, pressed)
+    """ % ACCENT_TEXT
 
 def _btn_style_remove():
     return """
     QPushButton {
-        background-color: %s;
+        background: %s;
         color: %s;
-        border: 1px solid %s;
-        border-radius: 14px;
-        font-weight: 600;
-        font-size: 13px;
-        min-width: 34px;
-        min-height: 34px;
-        font-family: "Segoe UI", "Helvetica Neue", Arial;
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 16px;
+        min-width: 32px;
+        min-height: 32px;
     }
     QPushButton:hover {
-        background-color: %s;
+        background: %s;
     }
     QPushButton:pressed {
-        background-color: %s;
+        background: %s;
     }
     QPushButton:focus { outline: none; }
-    """ % (
-        REMOVE_BTN_BG,
-        ACCENT_TEXT,
-        QtGui.QColor(REMOVE_BTN_BG).darker(115).name(),
-        REMOVE_BTN_BG_HOVER,
-        REMOVE_BTN_BG_PRESS,
-    )
+    """ % (REMOVE_BTN_BG, ACCENT_TEXT, REMOVE_BTN_BG_HOVER, REMOVE_BTN_BG_PRESS)
 
 # Title bar (no refresh)
-class CloseButton(QtWidgets.QPushButton):
-    """Custom close button with a large cross."""
-
-    def __init__(self, parent=None):
-        super(CloseButton, self).__init__(parent)
-        self.setObjectName("titleCloseButton")
-        self.setCursor(QtCore.Qt.PointingHandCursor)
-        self.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.setFixedSize(40, 40)
-        self._state = "normal"
-        self._colors = {
-            "normal": (
-                QtGui.QColor(79, 141, 158, 56),
-                QtGui.QColor(230, 235, 244, 220),
-            ),
-            "hover": (
-                QtGui.QColor(79, 141, 158, 92),
-                QtGui.QColor(255, 255, 255, 255),
-            ),
-            "pressed": (
-                QtGui.QColor(79, 141, 158, 76),
-                QtGui.QColor(215, 232, 240, 255),
-            ),
-        }
-
-    def enterEvent(self, event):
-        self._state = "hover"
-        self.update()
-        super(CloseButton, self).enterEvent(event)
-
-    def leaveEvent(self, event):
-        self._state = "normal"
-        self.update()
-        super(CloseButton, self).leaveEvent(event)
-
-    def mousePressEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
-            self._state = "pressed"
-            self.update()
-        super(CloseButton, self).mousePressEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        super(CloseButton, self).mouseReleaseEvent(event)
-        if self.rect().contains(event.pos()):
-            self._state = "hover"
-        else:
-            self._state = "normal"
-        self.update()
-
-    def paintEvent(self, event):
-        painter = QtGui.QPainter(self)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        bg_color, cross_color = self._colors[self._state]
-        rect = self.rect().adjusted(2, 2, -2, -2)
-        painter.setPen(QtCore.Qt.NoPen)
-        painter.setBrush(bg_color)
-        painter.drawRoundedRect(rect, 18, 18)
-        painter.setPen(QtGui.QPen(cross_color, 2.8, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap))
-        inset = rect.width() * 0.28
-        p1 = QtCore.QPointF(rect.left() + inset, rect.top() + inset)
-        p2 = QtCore.QPointF(rect.right() - inset, rect.bottom() - inset)
-        p3 = QtCore.QPointF(rect.left() + inset, rect.bottom() - inset)
-        p4 = QtCore.QPointF(rect.right() - inset, rect.top() + inset)
-        painter.drawLine(p1, p2)
-        painter.drawLine(p3, p4)
-
-
 class TitleBar(QtWidgets.QWidget):
     def __init__(self, parent=None, title="Attribute Connector"):
         super(TitleBar, self).__init__(parent)
         self._drag = None
-        self.setObjectName("titleBar")
-        self.setFixedHeight(68)
-        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
-        self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
+        self.setFixedHeight(50)
         self.setStyleSheet(
-            """
-            QWidget#titleBar {
-                background: %s;
-                border-top-left-radius: 24px;
-                border-top-right-radius: 24px;
-                border-bottom-left-radius: 0px;
-                border-bottom-right-radius: 0px;
-                margin: 0px;
-                border-bottom: 1px solid rgba(120,134,154,0.45);
-            }
-            """ % TITLE_BG_RGBA
+            "background-color: %s; border-top-left-radius:12px; border-bottom-left-radius:12px;"
+            " border-top-right-radius:0px; border-bottom-right-radius:0px;" % TITLE_BG_RGBA
         )
         lay = QtWidgets.QHBoxLayout(self)
-        lay.setContentsMargins(24, 14, 24, 14)
-        lay.setSpacing(16)
-
-        self.logo = QtWidgets.QLabel("AC")
-        self.logo.setObjectName("titleBadge")
-        self.logo.setAlignment(QtCore.Qt.AlignCenter)
-        self.logo.setFixedSize(48, 48)
-        self.logo.setStyleSheet(
-            """
-            QLabel#titleBadge {
-                background-color: rgba(255,255,255,0.05);
-                color: %s;
-                border-radius: 16px;
-                font-weight: 600;
-                font-size: 17px;
-                border: 1px solid rgba(255,255,255,0.18);
-                letter-spacing: 1px;
-            }
-            """ % TITLE_TEXT
-        )
-        badge_shadow = QtWidgets.QGraphicsDropShadowEffect(self.logo)
-        badge_shadow.setBlurRadius(24)
-        badge_shadow.setOffset(0, 6)
-        badge_shadow.setColor(QtGui.QColor(15, 18, 24, 140))
-        self.logo.setGraphicsEffect(badge_shadow)
-        lay.addWidget(self.logo, 0, QtCore.Qt.AlignVCenter)
-
-        text_block = QtWidgets.QVBoxLayout()
-        text_block.setContentsMargins(0, 0, 0, 0)
-        text_block.setSpacing(2)
+        lay.setContentsMargins(18, 8, 10, 8)
+        lay.setSpacing(8)
         self.label = QtWidgets.QLabel(title)
-        self.label.setStyleSheet(
-            "color:%s; font-weight:600; font-size:14px; letter-spacing:0.8px; text-transform:none;"
-            % TITLE_TEXT
-        )
+        self.label.setStyleSheet("color:%s; font-weight:600; font-size:12px;" % TITLE_TEXT)
         self.label.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
-        text_block.addWidget(self.label)
-        self.subtitle = QtWidgets.QLabel("Precision attribute routing for production rigs")
-        self.subtitle.setStyleSheet(
-            "color: rgba(230,235,244,0.65); font-size:11px; letter-spacing:0.5px;"
-        )
-        self.subtitle.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
-        text_block.addWidget(self.subtitle)
-        lay.addLayout(text_block, 1)
-        lay.addItem(
-            QtWidgets.QSpacerItem(
-                0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
-            )
-        )
-
-        self.btn_close = CloseButton(self)
+        lay.addWidget(self.label, 1)
+        lay.addStretch(1)
+        self.btn_close = QtWidgets.QPushButton("✕")
+        self.btn_close.setFixedSize(32, 32)
+        self.btn_close.setCursor(QtCore.Qt.PointingHandCursor)
+        self.btn_close.setStyleSheet(_btn_style_basic())
         self.btn_close.clicked.connect(lambda: self.window().close())
-        lay.addWidget(self.btn_close, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        lay.addWidget(self.btn_close, 0)
 
     def mousePressEvent(self, e):
         if e.button() == QtCore.Qt.LeftButton:
@@ -450,27 +298,18 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
         self.verticalHeader().setVisible(False)
         self.setShowGrid(False)
         self.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.setStyleSheet("""
             QTableWidget {
-                background: transparent;
+                background: %s;
                 color: %s;
                 gridline-color: %s;
                 selection-background-color: %s;
                 selection-color: %s;
                 outline: none;
-                border: none;
-                font-size: 12px;
-                font-family: "Segoe UI", "Helvetica Neue", Arial;
-                alternate-background-color: %s;
-            }
-            QTableWidget::item {
-                padding: 6px;
             }
             QTableWidget::item:selected {
                 background: %s;
                 color: %s;
-                border-radius: 10px;
             }
             QTableView::item:focus {
                 outline: none;
@@ -479,65 +318,18 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
                 background: %s;
                 color: %s;
                 border:0;
-                border-bottom: 1px solid %s;
-                padding:8px 6px;
-                border-top-left-radius:10px;
-                border-top-right-radius:10px;
-                font-weight:600;
-                letter-spacing:0.4px;
-            }
-            QHeaderView::section:horizontal:first {
-                border-top-left-radius:10px;
-            }
-            QHeaderView::section:horizontal:last {
-                border-top-right-radius:10px;
-            }
-            QTableCornerButton::section {
-                background: %s;
-                border: 0;
-            }
-            QScrollBar:vertical {
-                background: transparent;
-                width: 10px;
-                margin: 12px 4px 12px 0;
-            }
-            QScrollBar::handle:vertical {
-                background: rgba(120,134,154,0.45);
-                border-radius: 4px;
-            }
-            QScrollBar::handle:vertical:hover {
-                background: rgba(120,134,154,0.6);
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                height: 0px;
-            }
-            QScrollBar:horizontal {
-                background: transparent;
-                height: 10px;
-                margin: 0 12px 4px 12px;
-            }
-            QScrollBar::handle:horizontal {
-                background: rgba(120,134,154,0.45);
-                border-radius: 4px;
-            }
-            QScrollBar::handle:horizontal:hover {
-                background: rgba(120,134,154,0.6);
-            }
-            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
-                width: 0px;
+                padding:6px;
             }
         """ % (
+            TABLE_BG,
             LABEL_LIGHT,
             TABLE_GRID,
-            TABLE_SELECTION_SOFT,
+            TABLE_SELECTION,
             TABLE_SELECTION_TEXT,
-            QtGui.QColor(TABLE_BG).lighter(103).name(),
             TABLE_SELECTION,
             TABLE_SELECTION_TEXT,
             TABLE_HEADER_BG,
             LABEL_LIGHT,
-            PANEL_BORDER,
-            TABLE_HEADER_BG,
         ))
         self.setColumnWidth(0, 40)
 
@@ -631,7 +423,6 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
                     self.setRowCount(0)
                     for nr, rdict in enumerate(new_rows):
                         self.insertRow(nr)
-                        self.setRowHeight(nr, TABLE_ROW_HEIGHT)
                         itn = QtWidgets.QTableWidgetItem(str(nr+1))
                         itn.setFlags(itn.flags() ^ QtCore.Qt.ItemIsEditable)
                         self.setItem(nr,0,itn)
@@ -646,7 +437,7 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
                         btn.setCursor(QtCore.Qt.PointingHandCursor)
                         btn.setFocusPolicy(QtCore.Qt.NoFocus)
                         btn.setStyleSheet(_btn_style_remove())
-                        btn.setFixedSize(36, 36)
+                        btn.setFixedSize(34, 34)
                         btn.clicked.connect(lambda checked=False, b=btn, t=self: ReorderableTableWidget._on_remove_button_clicked(t,b))
                         self.setCellWidget(nr,3,btn)
                 except Exception:
@@ -716,7 +507,7 @@ class AttributePickerDialog(QtWidgets.QDialog):
         super(AttributePickerDialog, self).__init__(parent)
         self.objects = list(objects)
         self.setWindowTitle("Pick Attribute")
-        self.setMinimumSize(440,380)
+        self.setMinimumSize(460,420)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Dialog)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
         self._build_ui()
@@ -724,66 +515,38 @@ class AttributePickerDialog(QtWidgets.QDialog):
 
     def _build_ui(self):
         outer = QtWidgets.QVBoxLayout(self)
-        outer.setContentsMargins(12,12,12,12)
+        outer.setContentsMargins(10,10,10,10)
         outer.setSpacing(0)
 
         panel = QtWidgets.QFrame()
         panel.setObjectName("pickerPanel")
         panel.setStyleSheet(
-            "QFrame#pickerPanel{ background:%s; border:1px solid %s; border-radius:20px; }"
+            "QFrame#pickerPanel{ background:%s; border:1px solid %s; border-top-left-radius:12px; border-top-right-radius:0px; border-bottom-left-radius:12px; border-bottom-right-radius:12px; }"
             % (PANEL_BG_RGBA, PANEL_BORDER)
         )
         outer.addWidget(panel)
 
         panel_layout = QtWidgets.QVBoxLayout(panel)
-        panel_layout.setContentsMargins(0,0,0,12)
-        panel_layout.setSpacing(10)
+        panel_layout.setContentsMargins(0,0,8,8)
+        panel_layout.setSpacing(6)
 
         self.title_bar = TitleBar(self, "Pick Attribute")
         panel_layout.addWidget(self.title_bar)
 
         body = QtWidgets.QWidget()
         body_layout = QtWidgets.QVBoxLayout(body)
-        body_layout.setContentsMargins(18,16,18,18)
-        body_layout.setSpacing(14)
+        body_layout.setContentsMargins(12,10,12,12)
+        body_layout.setSpacing(12)
         panel_layout.addWidget(body)
 
         top_row = QtWidgets.QHBoxLayout()
         lbl = QtWidgets.QLabel("Search:")
-        lbl.setStyleSheet(
-            "color:%s; background: transparent; border: none; font-weight:600; letter-spacing:0.4px;"
-            % TEXT_MUTED
-        )
+        lbl.setStyleSheet("color:%s; background: transparent; border: none;" % LABEL_LIGHT)
         top_row.addWidget(lbl)
         self.edit_search = QtWidgets.QLineEdit()
-        self.edit_search.setPlaceholderText("Search attribute…")
+        self.edit_search.setPlaceholderText("search attribute...")
         self.edit_search.setStyleSheet(
-            """
-            QLineEdit {
-                background:%s;
-                color:%s;
-                border:1px solid %s;
-                border-radius:16px;
-                padding:8px 12px;
-                selection-background-color:%s;
-                selection-color:%s;
-                font-family:'Segoe UI','Helvetica Neue',Arial;
-            }
-            QLineEdit:focus {
-                border:2px solid %s;
-            }
-            QLineEdit::placeholder {
-                color:%s;
-            }
-            """ % (
-                INPUT_BG_LAYER,
-                LABEL_LIGHT,
-                PANEL_BORDER,
-                TABLE_SELECTION_SOFT,
-                TABLE_SELECTION_TEXT,
-                ACCENT_COLOR,
-                TEXT_MUTED,
-            )
+            "background:#232427; color:#e6e6e6; border-radius:8px; padding:6px;"
         )
         top_row.addWidget(self.edit_search,1)
         body_layout.addLayout(top_row)
@@ -794,32 +557,13 @@ class AttributePickerDialog(QtWidgets.QDialog):
             "QTreeWidget {"
             "    background:%s;"
             "    color:%s;"
-            "    border:1px solid %s;"
-            "    border-radius:18px;"
-            "    padding:10px;"
-            "    font-family:'Segoe UI','Helvetica Neue',Arial;"
+            "    border-radius:8px;"
+            "    padding:6px;"
             "}"
             "QTreeWidget::item {"
             "    background: transparent;"
-            "    padding:4px;"
             "}"
-            "QTreeWidget::item:hover {"
-            "    background:%s;"
-            "    border-radius:8px;"
-            "}"
-            "QTreeWidget::item:selected {"
-            "    background:%s;"
-            "    color:%s;"
-            "    border-radius:10px;"
-            "}"
-            % (
-                DARK_2_LAYER,
-                LABEL_LIGHT,
-                PANEL_BORDER,
-                QtGui.QColor(TABLE_SELECTION).lighter(120).name(),
-                TABLE_SELECTION_SOFT,
-                TABLE_SELECTION_TEXT,
-            )
+            % (TITLE_BG_RGBA, LABEL_LIGHT)
         )
         body_layout.addWidget(self.tree, 1)
 
@@ -882,10 +626,7 @@ class AttributePickerDialog(QtWidgets.QDialog):
 class AttrConnectorWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(AttrConnectorWidget, self).__init__(parent)
-        self.setStyleSheet(
-            "background-color:%s; color:%s; font-family:'Segoe UI', 'Helvetica Neue', Arial; font-size:12px;"
-            % (DARK_1_LAYER, LABEL_LIGHT)
-        )
+        self.setStyleSheet("color:%s;" % LABEL_LIGHT)
         self._build_ui()
         self._connect_signals()
         if not MAYA_AVAILABLE:
@@ -893,16 +634,15 @@ class AttrConnectorWidget(QtWidgets.QWidget):
 
     def _build_ui(self):
         L = QtWidgets.QVBoxLayout(self)
-        L.setContentsMargins(18, 16, 18, 18)
-        L.setSpacing(12)
+        L.setContentsMargins(12,10,12,12)
+        L.setSpacing(8)
 
         top = QtWidgets.QHBoxLayout()
         left = QtWidgets.QVBoxLayout()
         hdr = QtWidgets.QHBoxLayout()
         lbl_src = QtWidgets.QLabel("Sources")
         lbl_src.setStyleSheet(
-            "color:%s; font-weight:700; font-size:13px; letter-spacing:0.6px; background: transparent; border: none;"
-            % LABEL_LIGHT
+            "color:%s; font-weight:700; background: transparent; border: none;" % LABEL_LIGHT
         )
         hdr.addWidget(lbl_src)
         hdr.addStretch()
@@ -916,18 +656,11 @@ class AttrConnectorWidget(QtWidgets.QWidget):
 
         self.tbl_src = ReorderableTableWidget(0,4)
         self.tbl_src.setHorizontalHeaderLabels(["#", "Object", "Attribute", ""])
-        self._setup_table(self.tbl_src)
-        self.tbl_src_container = QtWidgets.QFrame()
-        self.tbl_src_container.setObjectName("tableContainerLeft")
-        self.tbl_src_container.setStyleSheet(
-            "#tableContainerLeft { background:%s; border:1px solid %s; border-radius:18px; padding:10px; }"
-            % (TABLE_BG_LAYER, PANEL_BORDER)
-        )
-        src_container_layout = QtWidgets.QVBoxLayout(self.tbl_src_container)
-        src_container_layout.setContentsMargins(6,6,6,10)
-        src_container_layout.setSpacing(4)
-        src_container_layout.addWidget(self.tbl_src)
-        left.addWidget(self.tbl_src_container)
+        self.tbl_src.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
+        self.tbl_src.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+        self.tbl_src.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+        self.tbl_src.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
+        left.addWidget(self.tbl_src)
 
         row_btn = QtWidgets.QHBoxLayout()
         row_btn.addStretch()
@@ -941,8 +674,7 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         hdr2 = QtWidgets.QHBoxLayout()
         lbl_tgt = QtWidgets.QLabel("Targets")
         lbl_tgt.setStyleSheet(
-            "color:%s; font-weight:700; font-size:13px; letter-spacing:0.6px; background: transparent; border: none;"
-            % LABEL_LIGHT
+            "color:%s; font-weight:700; background: transparent; border: none;" % LABEL_LIGHT
         )
         hdr2.addWidget(lbl_tgt)
         hdr2.addStretch()
@@ -956,18 +688,11 @@ class AttrConnectorWidget(QtWidgets.QWidget):
 
         self.tbl_tgt = ReorderableTableWidget(0,4)
         self.tbl_tgt.setHorizontalHeaderLabels(["#", "Object", "Attribute", ""])
-        self._setup_table(self.tbl_tgt)
-        self.tbl_tgt_container = QtWidgets.QFrame()
-        self.tbl_tgt_container.setObjectName("tableContainerRight")
-        self.tbl_tgt_container.setStyleSheet(
-            "#tableContainerRight { background:%s; border:1px solid %s; border-radius:18px; padding:10px; }"
-            % (TABLE_BG_LAYER, PANEL_BORDER)
-        )
-        tgt_container_layout = QtWidgets.QVBoxLayout(self.tbl_tgt_container)
-        tgt_container_layout.setContentsMargins(6,6,6,10)
-        tgt_container_layout.setSpacing(4)
-        tgt_container_layout.addWidget(self.tbl_tgt)
-        right.addWidget(self.tbl_tgt_container)
+        self.tbl_tgt.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
+        self.tbl_tgt.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+        self.tbl_tgt.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+        self.tbl_tgt.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
+        right.addWidget(self.tbl_tgt)
 
         row_btn2 = QtWidgets.QHBoxLayout()
         row_btn2.addStretch()
@@ -979,7 +704,6 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         L.addLayout(top)
 
         actions = QtWidgets.QHBoxLayout()
-        actions.setSpacing(12)
         self.btn_preview = QtWidgets.QPushButton("Preview")
         self.btn_preview.setStyleSheet(_btn_style_gray())
         self.btn_connect = QtWidgets.QPushButton("Connect")
@@ -994,11 +718,10 @@ class AttrConnectorWidget(QtWidgets.QWidget):
 
         self.txt_log = QtWidgets.QPlainTextEdit()
         self.txt_log.setReadOnly(True)
-        self.txt_log.setMaximumHeight(160)
+        self.txt_log.setMaximumHeight(200)
         self.txt_log.setStyleSheet(
-            "background: %s; color:%s; border:1px solid %s; border-radius:18px; padding:12px;"
-            "selection-background-color:%s; selection-color:%s; font-family:'Segoe UI','Helvetica Neue',Arial;"
-            % (DARK_2_LAYER, LABEL_LIGHT, PANEL_BORDER, TABLE_SELECTION_SOFT, TABLE_SELECTION_TEXT)
+            "background: #232427; color:%s; border-radius:8px; padding:8px;"
+            % LABEL_LIGHT
         )
         L.addWidget(self.txt_log)
 
@@ -1017,19 +740,6 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         self.btn_preview.clicked.connect(self.on_preview)          # now on_preview exists
         self.btn_connect.clicked.connect(self.on_connect)
         self.btn_disconnect.clicked.connect(self.on_disconnect)
-
-    def _setup_table(self, table):
-        header = table.horizontalHeader()
-        header.setSectionResizeMode(0, QtWidgets.QHeaderView.Fixed)
-        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
-        header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
-        header.setSectionResizeMode(3, QtWidgets.QHeaderView.Fixed)
-        header.setDefaultAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        table.setColumnWidth(0, 60)
-        table.setColumnWidth(3, 50)
-        table.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
-        table.setAlternatingRowColors(True)
-        table.verticalHeader().setDefaultSectionSize(TABLE_ROW_HEIGHT)
 
     def log_status(self, lines):
         self.txt_log.clear()
@@ -1054,7 +764,6 @@ class AttrConnectorWidget(QtWidgets.QWidget):
     def add_row(self, table, obj_name, attr_name="none"):
         r = table.rowCount()
         table.insertRow(r)
-        table.setRowHeight(r, TABLE_ROW_HEIGHT)
         num_item = QtWidgets.QTableWidgetItem(str(r+1))
         num_item.setFlags(num_item.flags() ^ QtCore.Qt.ItemIsEditable)
         table.setItem(r,0,num_item)
@@ -1069,7 +778,7 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         btn.setCursor(QtCore.Qt.PointingHandCursor)
         btn.setFocusPolicy(QtCore.Qt.NoFocus)
         btn.setStyleSheet(_btn_style_remove())
-        btn.setFixedSize(36, 36)
+        btn.setFixedSize(34, 34)
         btn.clicked.connect(lambda checked=False, b=btn, t=table: ReorderableTableWidget._on_remove_button_clicked(t,b))
         table.setCellWidget(r,3,btn)
 
@@ -1246,25 +955,20 @@ class AttrConnectorWindow(QtWidgets.QMainWindow):
         self.setObjectName(WINDOW_NAME)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Window)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
-        self.setMinimumSize(940,560)
+        self.setMinimumSize(980,680)
         outer = QtWidgets.QWidget()
         outer.setStyleSheet("background: transparent;")
         ol = QtWidgets.QVBoxLayout(outer)
-        ol.setContentsMargins(0,0,0,0)
+        ol.setContentsMargins(10,10,10,10)
         ol.setSpacing(0)
         panel = QtWidgets.QFrame()
         panel.setStyleSheet(
-            "QFrame{ background:%s; border:1px solid %s; border-radius:24px; }"
+            "QFrame{ background:%s; border:1px solid %s; border-top-left-radius:12px; border-top-right-radius:0px; border-bottom-left-radius:12px; border-bottom-right-radius:12px; }"
             % (PANEL_BG_RGBA, PANEL_BORDER)
         )
-        shadow = QtWidgets.QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(42)
-        shadow.setOffset(0, 18)
-        shadow.setColor(QtGui.QColor(10, 12, 18, 150))
-        panel.setGraphicsEffect(shadow)
         pl = QtWidgets.QVBoxLayout(panel)
-        pl.setContentsMargins(0,0,0,18)
-        pl.setSpacing(10)
+        pl.setContentsMargins(0,0,8,8)
+        pl.setSpacing(6)
         self.title = TitleBar(self, "Attribute Connector")
         pl.addWidget(self.title)
         self.body = AttrConnectorWidget(self)
