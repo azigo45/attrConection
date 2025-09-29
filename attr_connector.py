@@ -811,6 +811,8 @@ class AttrConnectorWidget(QtWidgets.QWidget):
 
         actions = QtWidgets.QHBoxLayout()
         actions.setContentsMargins(0,0,0,0)
+        actions.setSpacing(12)
+        actions.addStretch()
         self.btn_preview = QtWidgets.QPushButton("Preview")
         self.btn_preview.setStyleSheet(_btn_style_gray())
         self.btn_connect = QtWidgets.QPushButton("Connect")
@@ -820,7 +822,6 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         actions.addWidget(self.btn_preview)
         actions.addWidget(self.btn_connect)
         actions.addWidget(self.btn_disconnect)
-        actions.addStretch()
         L.addLayout(actions)
 
         self.txt_log = QtWidgets.QPlainTextEdit()
