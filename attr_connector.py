@@ -667,12 +667,17 @@ class AttrConnectorWidget(QtWidgets.QWidget):
 
     def _build_ui(self):
         L = QtWidgets.QVBoxLayout(self)
-        L.setContentsMargins(12,10,12,12)
+        L.setContentsMargins(0,10,0,12)
         L.setSpacing(8)
 
         top = QtWidgets.QHBoxLayout()
+        top.setContentsMargins(0,0,0,0)
+        top.setSpacing(12)
         left = QtWidgets.QVBoxLayout()
+        left.setContentsMargins(0,0,0,0)
+        left.setSpacing(6)
         hdr = QtWidgets.QHBoxLayout()
+        hdr.setContentsMargins(0,0,0,0)
         lbl_src = QtWidgets.QLabel("Sources")
         lbl_src.setStyleSheet(
             "color:%s; font-weight:700; background: transparent; border: none;" % LABEL_LIGHT
@@ -696,6 +701,7 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         left.addWidget(self.tbl_src)
 
         row_btn = QtWidgets.QHBoxLayout()
+        row_btn.setContentsMargins(0,0,0,0)
         row_btn.addStretch()
         self.btn_src_add_attr = QtWidgets.QPushButton("Add Attribute")
         self.btn_src_add_attr.setStyleSheet(_btn_style_basic())
@@ -704,7 +710,10 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         top.addLayout(left,1)
 
         right = QtWidgets.QVBoxLayout()
+        right.setContentsMargins(0,0,0,0)
+        right.setSpacing(6)
         hdr2 = QtWidgets.QHBoxLayout()
+        hdr2.setContentsMargins(0,0,0,0)
         lbl_tgt = QtWidgets.QLabel("Targets")
         lbl_tgt.setStyleSheet(
             "color:%s; font-weight:700; background: transparent; border: none;" % LABEL_LIGHT
@@ -728,6 +737,7 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         right.addWidget(self.tbl_tgt)
 
         row_btn2 = QtWidgets.QHBoxLayout()
+        row_btn2.setContentsMargins(0,0,0,0)
         row_btn2.addStretch()
         self.btn_tgt_add_attr = QtWidgets.QPushButton("Add Attribute")
         self.btn_tgt_add_attr.setStyleSheet(_btn_style_basic())
@@ -737,6 +747,7 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         L.addLayout(top)
 
         actions = QtWidgets.QHBoxLayout()
+        actions.setContentsMargins(0,0,0,0)
         self.btn_preview = QtWidgets.QPushButton("Preview")
         self.btn_preview.setStyleSheet(_btn_style_gray())
         self.btn_connect = QtWidgets.QPushButton("Connect")
@@ -1000,7 +1011,8 @@ class AttrConnectorWindow(QtWidgets.QMainWindow):
             % (PANEL_BG_RGBA, PANEL_BORDER)
         )
         pl = QtWidgets.QVBoxLayout(panel)
-        pl.setContentsMargins(0,0,0,8)
+        # Align the title bar with the inner content so the panel sides remain flush.
+        pl.setContentsMargins(12,0,12,8)
         pl.setSpacing(6)
         self.title = TitleBar(self, "Attribute Connector")
         pl.addWidget(self.title)
