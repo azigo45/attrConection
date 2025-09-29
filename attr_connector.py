@@ -242,27 +242,60 @@ def _btn_style_remove():
     """ % (REMOVE_BTN_BG, ACCENT_TEXT, REMOVE_BTN_BG_HOVER, REMOVE_BTN_BG_PRESS)
 
 # Title bar (no refresh)
+class CloseButton(QtWidgets.QAbstractButton):
+    def __init__(self, parent=None):
+        super(CloseButton, self).__init__(parent)
+        self.setFixedSize(36, 36)
+        self.setCursor(QtCore.Qt.PointingHandCursor)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        base = QtGui.QColor("#596274")
+        self._colors = {
+            "normal": base,
+            "hover": base.lighter(120),
+            "pressed": base.darker(120),
+        }
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        if self.isDown():
+            bg = self._colors["pressed"]
+        elif self.underMouse():
+            bg = self._colors["hover"]
+        else:
+            bg = self._colors["normal"]
+        painter.setBrush(bg)
+        painter.setPen(QtCore.Qt.NoPen)
+        rect = self.rect().adjusted(2, 2, -2, -2)
+        painter.drawRoundedRect(rect, 10, 10)
+        pen = QtGui.QPen(QtGui.QColor(TITLE_TEXT))
+        pen.setWidth(3)
+        pen.setCapStyle(QtCore.Qt.RoundCap)
+        painter.setPen(pen)
+        cross = self.rect().adjusted(11, 11, -11, -11)
+        painter.drawLine(cross.topLeft(), cross.bottomRight())
+        painter.drawLine(cross.topRight(), cross.bottomLeft())
+
+
 class TitleBar(QtWidgets.QWidget):
     def __init__(self, parent=None, title="Attribute Connector"):
         super(TitleBar, self).__init__(parent)
         self._drag = None
         self.setFixedHeight(50)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         self.setStyleSheet(
-            "background-color: %s; border-top-left-radius:12px; border-bottom-left-radius:12px;"
+            "background-color: %s; border-top-left-radius:12px; border-bottom-left-radius:0px;"
             " border-top-right-radius:0px; border-bottom-right-radius:0px;" % TITLE_BG_RGBA
         )
         lay = QtWidgets.QHBoxLayout(self)
-        lay.setContentsMargins(18, 8, 10, 8)
+        lay.setContentsMargins(18, 8, 8, 8)
         lay.setSpacing(8)
         self.label = QtWidgets.QLabel(title)
         self.label.setStyleSheet("color:%s; font-weight:600; font-size:12px;" % TITLE_TEXT)
         self.label.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
         lay.addWidget(self.label, 1)
         lay.addStretch(1)
-        self.btn_close = QtWidgets.QPushButton("✕")
-        self.btn_close.setFixedSize(32, 32)
-        self.btn_close.setCursor(QtCore.Qt.PointingHandCursor)
-        self.btn_close.setStyleSheet(_btn_style_basic())
+        self.btn_close = CloseButton(self)
         self.btn_close.clicked.connect(lambda: self.window().close())
         lay.addWidget(self.btn_close, 0)
 
