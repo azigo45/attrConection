@@ -505,26 +505,54 @@ class AttributePickerDialog(QtWidgets.QDialog):
         self.objects = list(objects)
         self.setWindowTitle("Pick Attribute")
         self.setMinimumSize(460,420)
-        self.setStyleSheet("background:%s; border-radius:12px;" % DARK_2)
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Dialog)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
         self._build_ui()
         self._fill_tree()
 
     def _build_ui(self):
-        lay = QtWidgets.QVBoxLayout(self)
-        lay.setContentsMargins(10,10,10,10)
+        outer = QtWidgets.QVBoxLayout(self)
+        outer.setContentsMargins(10,10,10,10)
+        outer.setSpacing(0)
+
+        panel = QtWidgets.QFrame()
+        panel.setObjectName("pickerPanel")
+        panel.setStyleSheet(
+            "QFrame#pickerPanel{ background:%s; border:1px solid %s; border-radius:12px; }"
+            % (PANEL_BG_RGBA, PANEL_BORDER)
+        )
+        outer.addWidget(panel)
+
+        panel_layout = QtWidgets.QVBoxLayout(panel)
+        panel_layout.setContentsMargins(0,0,8,8)
+        panel_layout.setSpacing(6)
+
+        self.title_bar = TitleBar(self, "Pick Attribute")
+        panel_layout.addWidget(self.title_bar)
+
+        body = QtWidgets.QWidget()
+        body_layout = QtWidgets.QVBoxLayout(body)
+        body_layout.setContentsMargins(12,10,12,12)
+        body_layout.setSpacing(12)
+        panel_layout.addWidget(body)
+
         top_row = QtWidgets.QHBoxLayout()
         lbl = QtWidgets.QLabel("Search:")
         lbl.setStyleSheet("color:%s; background: transparent; border: none;" % LABEL_LIGHT)
         top_row.addWidget(lbl)
         self.edit_search = QtWidgets.QLineEdit()
         self.edit_search.setPlaceholderText("search attribute...")
-        self.edit_search.setStyleSheet("background:#232427; color:#e6e6e6; border-radius:8px; padding:6px;")
+        self.edit_search.setStyleSheet(
+            "background:#232427; color:#e6e6e6; border-radius:8px; padding:6px;"
+        )
         top_row.addWidget(self.edit_search,1)
-        lay.addLayout(top_row)
+        body_layout.addLayout(top_row)
+
         self.tree = QtWidgets.QTreeWidget()
         self.tree.setHeaderHidden(True)
         self.tree.setStyleSheet("background:transparent; color:%s;" % LABEL_LIGHT)
-        lay.addWidget(self.tree)
+        body_layout.addWidget(self.tree, 1)
+
         btn_row = QtWidgets.QHBoxLayout()
         self.btn_apply = QtWidgets.QPushButton("Apply")
         self.btn_apply.setStyleSheet(_btn_style_basic())
@@ -533,7 +561,7 @@ class AttributePickerDialog(QtWidgets.QDialog):
         btn_row.addStretch()
         btn_row.addWidget(self.btn_cancel)
         btn_row.addWidget(self.btn_apply)
-        lay.addLayout(btn_row)
+        body_layout.addLayout(btn_row)
         self.edit_search.textChanged.connect(self._fill_tree)
         self.tree.itemDoubleClicked.connect(self._on_double)
         self.btn_apply.clicked.connect(self._on_apply)
@@ -551,7 +579,7 @@ class AttributePickerDialog(QtWidgets.QDialog):
                 if q and q not in attr.lower():
                     continue
                 child = QtWidgets.QTreeWidgetItem(top)
-                child.setText(0, attr + ("  (common)" if present_all else ""))
+                child.setText(0, attr)
                 child.setData(0, QtCore.Qt.UserRole, attr)
                 if not present_all:
                     f = child.font(0); f.setItalic(True); child.setFont(0, f)
