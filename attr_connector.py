@@ -75,7 +75,7 @@ mel = _maya_mel
 omui = _omui
 
 # Appearance constants
-PANEL_BG_RGBA = "rgba(52,58,70,255)"
+PANEL_BG_RGBA = "rgba(52,58,70,235)"
 TITLE_BG_RGBA = "rgba(64,72,86,255)"
 TITLE_TEXT = "#F5F7FB"
 GRADIENT_START = "#6C8CFF"
@@ -247,7 +247,9 @@ class TitleBar(QtWidgets.QWidget):
         super(TitleBar, self).__init__(parent)
         self._drag = None
         self.setFixedHeight(50)
-        self.setStyleSheet("background-color: %s; border-top-left-radius:12px; border-top-right-radius:12px;" % TITLE_BG_RGBA)
+        self.setStyleSheet(
+            "background-color: %s; border-top-left-radius:0px; border-top-right-radius:0px;" % TITLE_BG_RGBA
+        )
         lay = QtWidgets.QHBoxLayout(self)
         lay.setContentsMargins(12, 8, 8, 8)
         lay.setSpacing(8)
@@ -512,7 +514,7 @@ class AttributePickerDialog(QtWidgets.QDialog):
         lay.setContentsMargins(10,10,10,10)
         top_row = QtWidgets.QHBoxLayout()
         lbl = QtWidgets.QLabel("Search:")
-        lbl.setStyleSheet("color:%s;" % LABEL_LIGHT)
+        lbl.setStyleSheet("color:%s; background: transparent; border: none;" % LABEL_LIGHT)
         top_row.addWidget(lbl)
         self.edit_search = QtWidgets.QLineEdit()
         self.edit_search.setPlaceholderText("search attribute...")
@@ -553,7 +555,10 @@ class AttributePickerDialog(QtWidgets.QDialog):
                 child.setData(0, QtCore.Qt.UserRole, attr)
                 if not present_all:
                     f = child.font(0); f.setItalic(True); child.setFont(0, f)
-        self.tree.expandAll()
+        if q:
+            self.tree.expandAll()
+        else:
+            self.tree.collapseAll()
 
     def _get_selected_attr(self):
         it = self.tree.currentItem()
@@ -594,7 +599,9 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         left = QtWidgets.QVBoxLayout()
         hdr = QtWidgets.QHBoxLayout()
         lbl_src = QtWidgets.QLabel("Sources")
-        lbl_src.setStyleSheet("color:%s; font-weight:700;" % LABEL_LIGHT)
+        lbl_src.setStyleSheet(
+            "color:%s; font-weight:700; background: transparent; border: none;" % LABEL_LIGHT
+        )
         hdr.addWidget(lbl_src)
         hdr.addStretch()
         self.btn_src_add_to = QtWidgets.QPushButton("Add to (Sources)")
@@ -624,7 +631,9 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         right = QtWidgets.QVBoxLayout()
         hdr2 = QtWidgets.QHBoxLayout()
         lbl_tgt = QtWidgets.QLabel("Targets")
-        lbl_tgt.setStyleSheet("color:%s; font-weight:700;" % LABEL_LIGHT)
+        lbl_tgt.setStyleSheet(
+            "color:%s; font-weight:700; background: transparent; border: none;" % LABEL_LIGHT
+        )
         hdr2.addWidget(lbl_tgt)
         hdr2.addStretch()
         self.btn_tgt_add_to = QtWidgets.QPushButton("Add to (Targets)")
