@@ -560,7 +560,7 @@ class AttributePickerDialog(QtWidgets.QDialog):
         outer.addWidget(panel)
 
         panel_layout = QtWidgets.QVBoxLayout(panel)
-        panel_layout.setContentsMargins(0,0,8,8)
+        panel_layout.setContentsMargins(12,0,12,8)
         panel_layout.setSpacing(6)
 
         self.title_bar = TitleBar(self, "Pick Attribute")
