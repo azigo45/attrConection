@@ -75,16 +75,24 @@ mel = _maya_mel
 omui = _omui
 
 # Appearance constants
-PANEL_BG_RGBA = "rgba(18,20,22,230)"
-TITLE_BG_RGBA = "rgba(30,32,36,230)"
-TITLE_TEXT = "#EDEBF2"
-GRADIENT_START = "#6B7BFF"
-GRADIENT_END   = "#D78BFF"
-ACCENT_TEXT = "#ffffff"
-DARK_1 = "#121216"
-DARK_2 = "#1b1d20"
-PANEL_BORDER = "#2f3136"
-LABEL_LIGHT = "#cfd3d8"
+PANEL_BG_RGBA = "rgba(52,58,70,255)"
+TITLE_BG_RGBA = "rgba(64,72,86,255)"
+TITLE_TEXT = "#F5F7FB"
+GRADIENT_START = "#6C8CFF"
+GRADIENT_END   = "#8BA6FF"
+ACCENT_TEXT = "#F9FBFF"
+DARK_1 = "#1f2430"
+DARK_2 = "#282e3b"
+PANEL_BORDER = "#4d5565"
+LABEL_LIGHT = "#E4E8F1"
+TABLE_BG = "#3d4454"
+TABLE_HEADER_BG = "#4f586b"
+TABLE_GRID = "#5a6478"
+TABLE_SELECTION = "#7285aa"
+TABLE_SELECTION_TEXT = "#f5f7fb"
+REMOVE_BTN_BG = "#505a6f"
+REMOVE_BTN_BG_HOVER = "#5f6a81"
+REMOVE_BTN_BG_PRESS = "#3f4758"
 WINDOW_NAME = "AttrConnector_Styled_Final_v4"
 
 # Maya main window helper
@@ -166,44 +174,79 @@ def _btn_style_basic():
     return """
     QPushButton {
         color: %s;
-        border: none;
-        padding: 6px 12px;
-        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.08);
+        padding: 8px 14px;
+        border-radius: 8px;
         background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %s, stop:1 %s);
         font-weight:600;
     }
     QPushButton:hover {
-        box-shadow: 0 0 12px rgba(120,90,255,0.15);
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %s, stop:1 %s);
     }
     QPushButton:pressed {
         background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %s, stop:1 %s);
-        padding-top:8px;
+        padding-top:9px;
+        padding-bottom:7px;
     }
-    """ % (ACCENT_TEXT, GRADIENT_START, GRADIENT_END, GRADIENT_END, GRADIENT_START)
+    QPushButton:focus { outline: none; }
+    """ % (
+        ACCENT_TEXT,
+        GRADIENT_START,
+        GRADIENT_END,
+        QtGui.QColor(GRADIENT_START).lighter(110).name(),
+        QtGui.QColor(GRADIENT_END).lighter(110).name(),
+        QtGui.QColor(GRADIENT_START).darker(115).name(),
+        QtGui.QColor(GRADIENT_END).darker(115).name(),
+    )
 
 def _btn_style_gray():
     return """
     QPushButton {
-        color: #eef0f3;
-        border: 1px solid %s;
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #2a2d31, stop:1 #232427);
-        padding: 6px 10px;
-        border-radius: 10px;
+        color: %s;
+        border: 1px solid rgba(255,255,255,0.05);
+        background: #495264;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-weight:600;
     }
     QPushButton:hover {
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #31343a, stop:1 #2a2c30);
+        background: #566074;
     }
     QPushButton:pressed {
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #25272a, stop:1 #1f2123);
+        background: #3f4758;
+        padding-top:9px;
+        padding-bottom:7px;
     }
-    """ % (PANEL_BORDER,)
+    QPushButton:focus { outline: none; }
+    """ % ACCENT_TEXT
+
+def _btn_style_remove():
+    return """
+    QPushButton {
+        background: %s;
+        color: %s;
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 16px;
+        min-width: 32px;
+        min-height: 32px;
+    }
+    QPushButton:hover {
+        background: %s;
+    }
+    QPushButton:pressed {
+        background: %s;
+    }
+    QPushButton:focus { outline: none; }
+    """ % (REMOVE_BTN_BG, ACCENT_TEXT, REMOVE_BTN_BG_HOVER, REMOVE_BTN_BG_PRESS)
 
 # Title bar (no refresh)
 class TitleBar(QtWidgets.QWidget):
     def __init__(self, parent=None, title="Attribute Connector"):
         super(TitleBar, self).__init__(parent)
         self._drag = None
-        self.setFixedHeight(48)
+        self.setFixedHeight(50)
         self.setStyleSheet("background-color: %s; border-top-left-radius:12px; border-top-right-radius:12px;" % TITLE_BG_RGBA)
         lay = QtWidgets.QHBoxLayout(self)
         lay.setContentsMargins(12, 8, 8, 8)
@@ -212,7 +255,7 @@ class TitleBar(QtWidgets.QWidget):
         self.label.setStyleSheet("color:%s; font-weight:600; font-size:12px;" % TITLE_TEXT)
         lay.addWidget(self.label, 1)
         self.btn_close = QtWidgets.QPushButton("✕")
-        self.btn_close.setFixedSize(28, 28)
+        self.btn_close.setFixedSize(32, 32)
         self.btn_close.setCursor(QtCore.Qt.PointingHandCursor)
         self.btn_close.setStyleSheet(_btn_style_basic())
         self.btn_close.clicked.connect(lambda: self.window().close())
@@ -248,13 +291,42 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
         self._animating = False
         # styling: remove left header, remove frame, set background
         self.verticalHeader().setVisible(False)
-        self.setShowGrid(True)
+        self.setShowGrid(False)
         self.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.setStyleSheet("""
-            QTableWidget { background: transparent; color: %s; }
-            QHeaderView::section { background: rgba(40,40,44,200); color: %s; border:0; padding:6px; }
-        """ % (LABEL_LIGHT, LABEL_LIGHT))
-        self.setColumnWidth(0, 36)
+            QTableWidget {
+                background: %s;
+                color: %s;
+                gridline-color: %s;
+                selection-background-color: %s;
+                selection-color: %s;
+                outline: none;
+            }
+            QTableWidget::item:selected {
+                background: %s;
+                color: %s;
+            }
+            QTableView::item:focus {
+                outline: none;
+            }
+            QHeaderView::section {
+                background: %s;
+                color: %s;
+                border:0;
+                padding:6px;
+            }
+        """ % (
+            TABLE_BG,
+            LABEL_LIGHT,
+            TABLE_GRID,
+            TABLE_SELECTION,
+            TABLE_SELECTION_TEXT,
+            TABLE_SELECTION,
+            TABLE_SELECTION_TEXT,
+            TABLE_HEADER_BG,
+            LABEL_LIGHT,
+        ))
+        self.setColumnWidth(0, 40)
 
     def mousePressEvent(self, event):
         idx = self.indexAt(event.pos())
@@ -357,9 +429,10 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
                         self.setItem(nr,2,attr_item)
                         btn = QtWidgets.QPushButton("✕")
                         btn.setToolTip("Remove this row")
-                        btn.setFixedWidth(26)
-                        btn.setFlat(True)
-                        btn.setStyleSheet(_btn_style_gray())
+                        btn.setCursor(QtCore.Qt.PointingHandCursor)
+                        btn.setFocusPolicy(QtCore.Qt.NoFocus)
+                        btn.setStyleSheet(_btn_style_remove())
+                        btn.setFixedSize(34, 34)
                         btn.clicked.connect(lambda checked=False, b=btn, t=self: ReorderableTableWidget._on_remove_button_clicked(t,b))
                         self.setCellWidget(nr,3,btn)
                 except Exception:
@@ -595,7 +668,10 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         self.txt_log = QtWidgets.QPlainTextEdit()
         self.txt_log.setReadOnly(True)
         self.txt_log.setMaximumHeight(200)
-        self.txt_log.setStyleSheet("background: rgba(28,30,33,200); color:%s; border-radius:8px; padding:8px;" % LABEL_LIGHT)
+        self.txt_log.setStyleSheet(
+            "background: %s; color:%s; border-radius:8px; padding:8px;"
+            % (TABLE_BG, LABEL_LIGHT)
+        )
         L.addWidget(self.txt_log)
 
         self.tbl_src.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
@@ -648,9 +724,10 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         table.setItem(r,2,attr_item)
         btn = QtWidgets.QPushButton("✕")
         btn.setToolTip("Remove this row")
-        btn.setFixedWidth(26)
-        btn.setFlat(True)
-        btn.setStyleSheet(_btn_style_gray())
+        btn.setCursor(QtCore.Qt.PointingHandCursor)
+        btn.setFocusPolicy(QtCore.Qt.NoFocus)
+        btn.setStyleSheet(_btn_style_remove())
+        btn.setFixedSize(34, 34)
         btn.clicked.connect(lambda checked=False, b=btn, t=table: ReorderableTableWidget._on_remove_button_clicked(t,b))
         table.setCellWidget(r,3,btn)
 
