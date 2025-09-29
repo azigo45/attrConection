@@ -246,16 +246,18 @@ class TitleBar(QtWidgets.QWidget):
     def __init__(self, parent=None, title="Attribute Connector"):
         super(TitleBar, self).__init__(parent)
         self._drag = None
-        self.setFixedHeight(50)
+        self.setFixedHeight(46)
         self.setStyleSheet(
-            "background-color: %s; border-top-left-radius:0px; border-top-right-radius:0px;" % TITLE_BG_RGBA
+            "background-color: %s; border-top-left-radius:12px; border-top-right-radius:0px;" % TITLE_BG_RGBA
         )
         lay = QtWidgets.QHBoxLayout(self)
-        lay.setContentsMargins(12, 8, 8, 8)
+        lay.setContentsMargins(16, 4, 6, 4)
         lay.setSpacing(8)
+        lay.addStretch(1)
         self.label = QtWidgets.QLabel(title)
         self.label.setStyleSheet("color:%s; font-weight:600; font-size:12px;" % TITLE_TEXT)
-        lay.addWidget(self.label, 1)
+        lay.addWidget(self.label, 0, QtCore.Qt.AlignCenter)
+        lay.addStretch(1)
         self.btn_close = QtWidgets.QPushButton("✕")
         self.btn_close.setFixedSize(32, 32)
         self.btn_close.setCursor(QtCore.Qt.PointingHandCursor)
@@ -518,7 +520,7 @@ class AttributePickerDialog(QtWidgets.QDialog):
         panel = QtWidgets.QFrame()
         panel.setObjectName("pickerPanel")
         panel.setStyleSheet(
-            "QFrame#pickerPanel{ background:%s; border:1px solid %s; border-radius:12px; }"
+            "QFrame#pickerPanel{ background:%s; border:1px solid %s; border-top-left-radius:12px; border-top-right-radius:0px; border-bottom-left-radius:12px; border-bottom-right-radius:12px; }"
             % (PANEL_BG_RGBA, PANEL_BORDER)
         )
         outer.addWidget(panel)
@@ -550,7 +552,18 @@ class AttributePickerDialog(QtWidgets.QDialog):
 
         self.tree = QtWidgets.QTreeWidget()
         self.tree.setHeaderHidden(True)
-        self.tree.setStyleSheet("background:transparent; color:%s;" % LABEL_LIGHT)
+        self.tree.setStyleSheet(
+            "QTreeWidget {"
+            "    background:%s;"
+            "    color:%s;"
+            "    border-radius:8px;"
+            "    padding:6px;"
+            "}"
+            "QTreeWidget::item {"
+            "    background: transparent;"
+            "}"
+            % (TITLE_BG_RGBA, LABEL_LIGHT)
+        )
         body_layout.addWidget(self.tree, 1)
 
         btn_row = QtWidgets.QHBoxLayout()
@@ -706,8 +719,8 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         self.txt_log.setReadOnly(True)
         self.txt_log.setMaximumHeight(200)
         self.txt_log.setStyleSheet(
-            "background: %s; color:%s; border-radius:8px; padding:8px;"
-            % (TABLE_BG, LABEL_LIGHT)
+            "background: #232427; color:%s; border-radius:8px; padding:8px;"
+            % LABEL_LIGHT
         )
         L.addWidget(self.txt_log)
 
@@ -948,7 +961,10 @@ class AttrConnectorWindow(QtWidgets.QMainWindow):
         ol.setContentsMargins(10,10,10,10)
         ol.setSpacing(0)
         panel = QtWidgets.QFrame()
-        panel.setStyleSheet("QFrame{ background:%s; border:1px solid %s; border-radius:12px; }" % (PANEL_BG_RGBA, PANEL_BORDER))
+        panel.setStyleSheet(
+            "QFrame{ background:%s; border:1px solid %s; border-top-left-radius:12px; border-top-right-radius:0px; border-bottom-left-radius:12px; border-bottom-right-radius:12px; }"
+            % (PANEL_BG_RGBA, PANEL_BORDER)
+        )
         pl = QtWidgets.QVBoxLayout(panel)
         pl.setContentsMargins(0,0,8,8)
         pl.setSpacing(6)
