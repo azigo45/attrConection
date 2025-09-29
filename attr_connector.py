@@ -246,17 +246,18 @@ class TitleBar(QtWidgets.QWidget):
     def __init__(self, parent=None, title="Attribute Connector"):
         super(TitleBar, self).__init__(parent)
         self._drag = None
-        self.setFixedHeight(46)
+        self.setFixedHeight(50)
         self.setStyleSheet(
-            "background-color: %s; border-top-left-radius:12px; border-top-right-radius:0px;" % TITLE_BG_RGBA
+            "background-color: %s; border-top-left-radius:12px; border-bottom-left-radius:12px;"
+            " border-top-right-radius:0px; border-bottom-right-radius:0px;" % TITLE_BG_RGBA
         )
         lay = QtWidgets.QHBoxLayout(self)
-        lay.setContentsMargins(16, 4, 6, 4)
+        lay.setContentsMargins(18, 8, 10, 8)
         lay.setSpacing(8)
-        lay.addStretch(1)
         self.label = QtWidgets.QLabel(title)
         self.label.setStyleSheet("color:%s; font-weight:600; font-size:12px;" % TITLE_TEXT)
-        lay.addWidget(self.label, 0, QtCore.Qt.AlignCenter)
+        self.label.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
+        lay.addWidget(self.label, 1)
         lay.addStretch(1)
         self.btn_close = QtWidgets.QPushButton("✕")
         self.btn_close.setFixedSize(32, 32)
