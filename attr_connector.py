@@ -275,6 +275,73 @@ def _btn_style_remove():
     )
 
 # Title bar (no refresh)
+class CloseButton(QtWidgets.QPushButton):
+    """Custom close button with a large cross."""
+
+    def __init__(self, parent=None):
+        super(CloseButton, self).__init__(parent)
+        self.setObjectName("titleCloseButton")
+        self.setCursor(QtCore.Qt.PointingHandCursor)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setFixedSize(40, 40)
+        self._state = "normal"
+        self._colors = {
+            "normal": (
+                QtGui.QColor(79, 141, 158, 56),
+                QtGui.QColor(230, 235, 244, 220),
+            ),
+            "hover": (
+                QtGui.QColor(79, 141, 158, 92),
+                QtGui.QColor(255, 255, 255, 255),
+            ),
+            "pressed": (
+                QtGui.QColor(79, 141, 158, 76),
+                QtGui.QColor(215, 232, 240, 255),
+            ),
+        }
+
+    def enterEvent(self, event):
+        self._state = "hover"
+        self.update()
+        super(CloseButton, self).enterEvent(event)
+
+    def leaveEvent(self, event):
+        self._state = "normal"
+        self.update()
+        super(CloseButton, self).leaveEvent(event)
+
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.LeftButton:
+            self._state = "pressed"
+            self.update()
+        super(CloseButton, self).mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        super(CloseButton, self).mouseReleaseEvent(event)
+        if self.rect().contains(event.pos()):
+            self._state = "hover"
+        else:
+            self._state = "normal"
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        bg_color, cross_color = self._colors[self._state]
+        rect = self.rect().adjusted(2, 2, -2, -2)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.setBrush(bg_color)
+        painter.drawRoundedRect(rect, 18, 18)
+        painter.setPen(QtGui.QPen(cross_color, 2.8, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap))
+        inset = rect.width() * 0.28
+        p1 = QtCore.QPointF(rect.left() + inset, rect.top() + inset)
+        p2 = QtCore.QPointF(rect.right() - inset, rect.bottom() - inset)
+        p3 = QtCore.QPointF(rect.left() + inset, rect.bottom() - inset)
+        p4 = QtCore.QPointF(rect.right() - inset, rect.top() + inset)
+        painter.drawLine(p1, p2)
+        painter.drawLine(p3, p4)
+
+
 class TitleBar(QtWidgets.QWidget):
     def __init__(self, parent=None, title="Attribute Connector"):
         super(TitleBar, self).__init__(parent)
@@ -297,7 +364,7 @@ class TitleBar(QtWidgets.QWidget):
             """ % TITLE_BG_RGBA
         )
         lay = QtWidgets.QHBoxLayout(self)
-        lay.setContentsMargins(24, 14, 20, 14)
+        lay.setContentsMargins(24, 14, 24, 14)
         lay.setSpacing(16)
 
         self.logo = QtWidgets.QLabel("AC")
@@ -341,31 +408,13 @@ class TitleBar(QtWidgets.QWidget):
         self.subtitle.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
         text_block.addWidget(self.subtitle)
         lay.addLayout(text_block, 1)
-        lay.addStretch(1)
-
-        self.btn_close = QtWidgets.QPushButton("Close ✕")
-        self.btn_close.setObjectName("titleCloseButton")
-        self.btn_close.setCursor(QtCore.Qt.PointingHandCursor)
-        self.btn_close.setStyleSheet(
-            """
-            QPushButton#titleCloseButton {
-                color: %s;
-                background: rgba(79, 141, 158, 0.22);
-                border: 1px solid rgba(126, 178, 193, 0.38);
-                border-radius: 18px;
-                padding: 8px 18px;
-                font-weight: 600;
-                letter-spacing: 0.6px;
-            }
-            QPushButton#titleCloseButton:hover {
-                background: rgba(79, 141, 158, 0.32);
-            }
-            QPushButton#titleCloseButton:pressed {
-                background: rgba(79, 141, 158, 0.28);
-            }
-            QPushButton#titleCloseButton:focus { outline: none; }
-            """ % TITLE_TEXT
+        lay.addItem(
+            QtWidgets.QSpacerItem(
+                0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+            )
         )
+
+        self.btn_close = CloseButton(self)
         self.btn_close.clicked.connect(lambda: self.window().close())
         lay.addWidget(self.btn_close, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
