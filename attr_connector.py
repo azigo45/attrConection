@@ -285,7 +285,7 @@ class TitleBar(QtWidgets.QWidget):
         self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         self.setStyleSheet(
             "background-color: %s; border-top-left-radius:12px; border-bottom-left-radius:0px;"
-            " border-top-right-radius:0px; border-bottom-right-radius:0px;" % TITLE_BG_RGBA
+            " border-top-right-radius:12px; border-bottom-right-radius:0px;" % TITLE_BG_RGBA
         )
         lay = QtWidgets.QHBoxLayout(self)
         lay.setContentsMargins(18, 8, 8, 8)
@@ -996,11 +996,11 @@ class AttrConnectorWindow(QtWidgets.QMainWindow):
         ol.setSpacing(0)
         panel = QtWidgets.QFrame()
         panel.setStyleSheet(
-            "QFrame{ background:%s; border:1px solid %s; border-top-left-radius:12px; border-top-right-radius:0px; border-bottom-left-radius:12px; border-bottom-right-radius:12px; }"
+            "QFrame{ background:%s; border:1px solid %s; border-top-left-radius:12px; border-top-right-radius:12px; border-bottom-left-radius:12px; border-bottom-right-radius:12px; }"
             % (PANEL_BG_RGBA, PANEL_BORDER)
         )
         pl = QtWidgets.QVBoxLayout(panel)
-        pl.setContentsMargins(0,0,8,8)
+        pl.setContentsMargins(0,0,0,8)
         pl.setSpacing(6)
         self.title = TitleBar(self, "Attribute Connector")
         pl.addWidget(self.title)
