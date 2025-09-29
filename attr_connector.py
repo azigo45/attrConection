@@ -288,7 +288,9 @@ class TitleBar(QtWidgets.QWidget):
             " border-top-right-radius:12px; border-bottom-right-radius:0px;" % TITLE_BG_RGBA
         )
         lay = QtWidgets.QHBoxLayout(self)
-        lay.setContentsMargins(0, 8, 8, 8)
+        # Provide symmetric padding so the title text and close button line up
+        # with the primary controls inside the panel body.
+        lay.setContentsMargins(12, 8, 12, 8)
         lay.setSpacing(8)
         self.label = QtWidgets.QLabel(title)
         self.label.setStyleSheet("color:%s; font-weight:600; font-size:12px;" % TITLE_TEXT)
