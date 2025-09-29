@@ -74,26 +74,25 @@ cmds = _maya_cmds
 mel = _maya_mel
 omui = _omui
 
-# Appearance constants
-PANEL_BG_RGBA = "rgba(52,58,70,235)"
-TITLE_BG_RGBA = "rgba(64,72,86,255)"
-TITLE_TEXT = "#F5F7FB"
-GRADIENT_START = "#6C8CFF"
-GRADIENT_END   = "#8BA6FF"
-ACCENT_TEXT = "#F9FBFF"
-DARK_1 = "#1f2430"
-DARK_2 = "#282e3b"
-PANEL_BORDER = "#4d5565"
-LABEL_LIGHT = "#E4E8F1"
-TABLE_BG = "#3d4454"
-TABLE_HEADER_BG = "#4f586b"
-TABLE_GRID = "#5a6478"
-TABLE_SELECTION = "#7285aa"
-TABLE_SELECTION_TEXT = "#f5f7fb"
-REMOVE_BTN_BG = "#505a6f"
-REMOVE_BTN_BG_HOVER = "#5f6a81"
-REMOVE_BTN_BG_PRESS = "#3f4758"
-WINDOW_NAME = "AttrConnector_Styled_Final_v4"
+# Appearance constants (ChatGPT-inspired theme)
+PANEL_BG_RGBA = "rgba(32,33,35,245)"
+TITLE_BG_RGBA = "#343541"
+TITLE_TEXT = "#ECECF1"
+ACCENT_COLOR = "#10a37f"
+ACCENT_TEXT = "#F7F7F8"
+DARK_1 = "#202123"
+DARK_2 = "#343541"
+PANEL_BORDER = "#3f4147"
+LABEL_LIGHT = "#ECECF1"
+TABLE_BG = "#444654"
+TABLE_HEADER_BG = "#565869"
+TABLE_GRID = "#3f4147"
+TABLE_SELECTION = "#0f8f6e"
+TABLE_SELECTION_TEXT = "#F7F7F8"
+REMOVE_BTN_BG = "#f04438"
+REMOVE_BTN_BG_HOVER = "#f97066"
+REMOVE_BTN_BG_PRESS = "#b42318"
+WINDOW_NAME = "AttrConnector_ChatGPT_Theme"
 TABLE_ROW_HEIGHT = 40
 
 # Maya main window helper
@@ -172,75 +171,81 @@ def categorize_attributes_for_objs(objs):
 
 # Button styles
 def _btn_style_basic():
+    base = QtGui.QColor(ACCENT_COLOR)
+    hover = base.lighter(115).name()
+    pressed = base.darker(115).name()
+    border = base.darker(130).name()
     return """
     QPushButton {
         color: %s;
-        border: 1px solid rgba(255,255,255,0.08);
-        padding: 8px 14px;
-        border-radius: 8px;
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %s, stop:1 %s);
+        border: 1px solid %s;
+        padding: 8px 16px;
+        border-radius: 12px;
+        background-color: %s;
         font-weight:600;
     }
     QPushButton:hover {
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %s, stop:1 %s);
+        background-color: %s;
     }
     QPushButton:pressed {
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 %s, stop:1 %s);
+        background-color: %s;
         padding-top:9px;
         padding-bottom:7px;
     }
     QPushButton:focus { outline: none; }
     """ % (
         ACCENT_TEXT,
-        GRADIENT_START,
-        GRADIENT_END,
-        QtGui.QColor(GRADIENT_START).lighter(110).name(),
-        QtGui.QColor(GRADIENT_END).lighter(110).name(),
-        QtGui.QColor(GRADIENT_START).darker(115).name(),
-        QtGui.QColor(GRADIENT_END).darker(115).name(),
+        border,
+        base.name(),
+        hover,
+        pressed,
     )
 
 def _btn_style_gray():
+    base = QtGui.QColor(TABLE_BG)
+    hover = base.lighter(115).name()
+    pressed = base.darker(115).name()
+    border = QtGui.QColor(PANEL_BORDER).name()
     return """
     QPushButton {
         color: %s;
-        border: 1px solid rgba(255,255,255,0.05);
-        background: #495264;
-        padding: 8px 14px;
-        border-radius: 8px;
+        border: 1px solid %s;
+        background-color: %s;
+        padding: 8px 16px;
+        border-radius: 12px;
         font-weight:600;
     }
     QPushButton:hover {
-        background: #566074;
+        background-color: %s;
     }
     QPushButton:pressed {
-        background: #3f4758;
+        background-color: %s;
         padding-top:9px;
         padding-bottom:7px;
     }
     QPushButton:focus { outline: none; }
-    """ % ACCENT_TEXT
+    """ % (ACCENT_TEXT, border, base.name(), hover, pressed)
 
 def _btn_style_remove():
     return """
     QPushButton {
-        background: %s;
+        background-color: %s;
         color: %s;
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 4px;
+        border: 1px solid %s;
+        border-radius: 10px;
         font-weight: 700;
         font-size: 16px;
         min-width: 32px;
         min-height: 32px;
     }
     QPushButton:hover {
-        background: %s;
+        background-color: %s;
     }
     QPushButton:pressed {
-        background: %s;
+        background-color: %s;
     }
     QPushButton:focus { outline: none; }
-    """ % (REMOVE_BTN_BG, ACCENT_TEXT, REMOVE_BTN_BG_HOVER, REMOVE_BTN_BG_PRESS)
+    """ % (REMOVE_BTN_BG, ACCENT_TEXT, QtGui.QColor(REMOVE_BTN_BG).darker(120).name(), REMOVE_BTN_BG_HOVER, REMOVE_BTN_BG_PRESS)
 
 # Title bar (no refresh)
 class TitleBar(QtWidgets.QWidget):
@@ -251,14 +256,14 @@ class TitleBar(QtWidgets.QWidget):
         self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.setStyleSheet(
-            "background-color: %s; border-top-left-radius:12px; border-top-right-radius:12px;"
-            " border-bottom-left-radius:0px; border-bottom-right-radius:0px; margin:0px;" % TITLE_BG_RGBA
+            "background-color: %s; border: 1px solid %s; border-top-left-radius:12px; border-top-right-radius:12px;"
+            " border-bottom-left-radius:0px; border-bottom-right-radius:0px; margin:0px;" % (TITLE_BG_RGBA, PANEL_BORDER)
         )
         lay = QtWidgets.QHBoxLayout(self)
         lay.setContentsMargins(18, 8, 10, 8)
         lay.setSpacing(8)
         self.label = QtWidgets.QLabel(title)
-        self.label.setStyleSheet("color:%s; font-weight:600; font-size:12px;" % TITLE_TEXT)
+        self.label.setStyleSheet("color:%s; font-weight:600; font-size:13px; letter-spacing:0.5px;" % TITLE_TEXT)
         self.label.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
         lay.addWidget(self.label, 1)
         lay.addStretch(1)
@@ -311,6 +316,8 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
                 selection-color: %s;
                 outline: none;
                 border: none;
+                font-size: 12px;
+                alternate-background-color: %s;
             }
             QTableWidget::item:selected {
                 background: %s;
@@ -323,6 +330,7 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
                 background: %s;
                 color: %s;
                 border:0;
+                border-bottom: 1px solid %s;
                 padding:6px;
                 border-top-left-radius:8px;
                 border-top-right-radius:8px;
@@ -342,10 +350,12 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
             TABLE_GRID,
             TABLE_SELECTION,
             TABLE_SELECTION_TEXT,
+            QtGui.QColor(TABLE_BG).darker(110).name(),
             TABLE_SELECTION,
             TABLE_SELECTION_TEXT,
             TABLE_HEADER_BG,
             LABEL_LIGHT,
+            PANEL_BORDER,
             TABLE_HEADER_BG,
         ))
         self.setColumnWidth(0, 40)
@@ -564,7 +574,9 @@ class AttributePickerDialog(QtWidgets.QDialog):
         self.edit_search = QtWidgets.QLineEdit()
         self.edit_search.setPlaceholderText("search attribute...")
         self.edit_search.setStyleSheet(
-            "background:#232427; color:#e6e6e6; border-radius:8px; padding:6px;"
+            "background:%s; color:%s; border:1px solid %s; border-radius:10px; padding:6px;"
+            "selection-background-color:%s; selection-color:%s;"
+            % (DARK_2, LABEL_LIGHT, PANEL_BORDER, TABLE_SELECTION, TABLE_SELECTION_TEXT)
         )
         top_row.addWidget(self.edit_search,1)
         body_layout.addLayout(top_row)
@@ -575,13 +587,19 @@ class AttributePickerDialog(QtWidgets.QDialog):
             "QTreeWidget {"
             "    background:%s;"
             "    color:%s;"
-            "    border-radius:8px;"
-            "    padding:6px;"
+            "    border:1px solid %s;"
+            "    border-radius:10px;"
+            "    padding:8px;"
             "}"
             "QTreeWidget::item {"
             "    background: transparent;"
             "}"
-            % (TITLE_BG_RGBA, LABEL_LIGHT)
+            "QTreeWidget::item:selected {"
+            "    background:%s;"
+            "    color:%s;"
+            "    border-radius:6px;"
+            "}"
+            % (TITLE_BG_RGBA, LABEL_LIGHT, PANEL_BORDER, TABLE_SELECTION, TABLE_SELECTION_TEXT)
         )
         body_layout.addWidget(self.tree, 1)
 
@@ -644,7 +662,7 @@ class AttributePickerDialog(QtWidgets.QDialog):
 class AttrConnectorWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(AttrConnectorWidget, self).__init__(parent)
-        self.setStyleSheet("color:%s;" % LABEL_LIGHT)
+        self.setStyleSheet("background-color:%s; color:%s;" % (DARK_1, LABEL_LIGHT))
         self._build_ui()
         self._connect_signals()
         if not MAYA_AVAILABLE:
@@ -678,8 +696,8 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         self.tbl_src_container = QtWidgets.QFrame()
         self.tbl_src_container.setObjectName("tableContainerLeft")
         self.tbl_src_container.setStyleSheet(
-            "#tableContainerLeft { background:%s; border:1px solid %s; border-radius:10px; }"
-            % (TABLE_BG, TABLE_GRID)
+            "#tableContainerLeft { background:%s; border:1px solid %s; border-radius:12px; padding:4px; }"
+            % (TABLE_BG, PANEL_BORDER)
         )
         src_container_layout = QtWidgets.QVBoxLayout(self.tbl_src_container)
         src_container_layout.setContentsMargins(6,6,6,6)
@@ -717,8 +735,8 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         self.tbl_tgt_container = QtWidgets.QFrame()
         self.tbl_tgt_container.setObjectName("tableContainerRight")
         self.tbl_tgt_container.setStyleSheet(
-            "#tableContainerRight { background:%s; border:1px solid %s; border-radius:10px; }"
-            % (TABLE_BG, TABLE_GRID)
+            "#tableContainerRight { background:%s; border:1px solid %s; border-radius:12px; padding:4px; }"
+            % (TABLE_BG, PANEL_BORDER)
         )
         tgt_container_layout = QtWidgets.QVBoxLayout(self.tbl_tgt_container)
         tgt_container_layout.setContentsMargins(6,6,6,6)
@@ -752,8 +770,8 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         self.txt_log.setReadOnly(True)
         self.txt_log.setMaximumHeight(200)
         self.txt_log.setStyleSheet(
-            "background: #232427; color:%s; border-radius:8px; padding:8px;"
-            % LABEL_LIGHT
+            "background: %s; color:%s; border:1px solid %s; border-radius:12px; padding:10px;"
+            % (DARK_2, LABEL_LIGHT, PANEL_BORDER)
         )
         L.addWidget(self.txt_log)
 
