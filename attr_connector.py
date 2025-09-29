@@ -94,6 +94,7 @@ REMOVE_BTN_BG = "#505a6f"
 REMOVE_BTN_BG_HOVER = "#5f6a81"
 REMOVE_BTN_BG_PRESS = "#3f4758"
 WINDOW_NAME = "AttrConnector_Styled_Final_v4"
+TABLE_ROW_HEIGHT = 40
 
 # Maya main window helper
 def maya_main_window():
@@ -247,9 +248,10 @@ class TitleBar(QtWidgets.QWidget):
         super(TitleBar, self).__init__(parent)
         self._drag = None
         self.setFixedHeight(50)
+        self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.setStyleSheet(
-            "background-color: %s; border-top-left-radius:12px; border-bottom-left-radius:12px;"
-            " border-top-right-radius:0px; border-bottom-right-radius:0px;" % TITLE_BG_RGBA
+            "background-color: %s; border-top-left-radius:12px; border-bottom-left-radius:0px;"
+            " border-top-right-radius:12px; border-bottom-right-radius:0px;" % TITLE_BG_RGBA
         )
         lay = QtWidgets.QHBoxLayout(self)
         lay.setContentsMargins(18, 8, 10, 8)
@@ -298,14 +300,16 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
         self.verticalHeader().setVisible(False)
         self.setShowGrid(False)
         self.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.setStyleSheet("""
             QTableWidget {
-                background: %s;
+                background: transparent;
                 color: %s;
                 gridline-color: %s;
                 selection-background-color: %s;
                 selection-color: %s;
                 outline: none;
+                border: none;
             }
             QTableWidget::item:selected {
                 background: %s;
@@ -319,9 +323,20 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
                 color: %s;
                 border:0;
                 padding:6px;
+                border-top-left-radius:8px;
+                border-top-right-radius:8px;
+            }
+            QHeaderView::section:horizontal:first {
+                border-top-left-radius:8px;
+            }
+            QHeaderView::section:horizontal:last {
+                border-top-right-radius:8px;
+            }
+            QTableCornerButton::section {
+                background: %s;
+                border: 0;
             }
         """ % (
-            TABLE_BG,
             LABEL_LIGHT,
             TABLE_GRID,
             TABLE_SELECTION,
@@ -330,6 +345,7 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
             TABLE_SELECTION_TEXT,
             TABLE_HEADER_BG,
             LABEL_LIGHT,
+            TABLE_HEADER_BG,
         ))
         self.setColumnWidth(0, 40)
 
@@ -423,6 +439,7 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
                     self.setRowCount(0)
                     for nr, rdict in enumerate(new_rows):
                         self.insertRow(nr)
+                        self.setRowHeight(nr, TABLE_ROW_HEIGHT)
                         itn = QtWidgets.QTableWidgetItem(str(nr+1))
                         itn.setFlags(itn.flags() ^ QtCore.Qt.ItemIsEditable)
                         self.setItem(nr,0,itn)
@@ -660,7 +677,17 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         self.tbl_src.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
         self.tbl_src.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
         self.tbl_src.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
-        left.addWidget(self.tbl_src)
+        self.tbl_src_container = QtWidgets.QFrame()
+        self.tbl_src_container.setObjectName("tableContainerLeft")
+        self.tbl_src_container.setStyleSheet(
+            "#tableContainerLeft { background:%s; border:1px solid %s; border-radius:10px; }"
+            % (TABLE_BG, TABLE_GRID)
+        )
+        src_container_layout = QtWidgets.QVBoxLayout(self.tbl_src_container)
+        src_container_layout.setContentsMargins(6,6,6,6)
+        src_container_layout.setSpacing(0)
+        src_container_layout.addWidget(self.tbl_src)
+        left.addWidget(self.tbl_src_container)
 
         row_btn = QtWidgets.QHBoxLayout()
         row_btn.addStretch()
@@ -692,7 +719,17 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         self.tbl_tgt.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
         self.tbl_tgt.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
         self.tbl_tgt.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
-        right.addWidget(self.tbl_tgt)
+        self.tbl_tgt_container = QtWidgets.QFrame()
+        self.tbl_tgt_container.setObjectName("tableContainerRight")
+        self.tbl_tgt_container.setStyleSheet(
+            "#tableContainerRight { background:%s; border:1px solid %s; border-radius:10px; }"
+            % (TABLE_BG, TABLE_GRID)
+        )
+        tgt_container_layout = QtWidgets.QVBoxLayout(self.tbl_tgt_container)
+        tgt_container_layout.setContentsMargins(6,6,6,6)
+        tgt_container_layout.setSpacing(0)
+        tgt_container_layout.addWidget(self.tbl_tgt)
+        right.addWidget(self.tbl_tgt_container)
 
         row_btn2 = QtWidgets.QHBoxLayout()
         row_btn2.addStretch()
@@ -764,6 +801,7 @@ class AttrConnectorWidget(QtWidgets.QWidget):
     def add_row(self, table, obj_name, attr_name="none"):
         r = table.rowCount()
         table.insertRow(r)
+        table.setRowHeight(r, TABLE_ROW_HEIGHT)
         num_item = QtWidgets.QTableWidgetItem(str(r+1))
         num_item.setFlags(num_item.flags() ^ QtCore.Qt.ItemIsEditable)
         table.setItem(r,0,num_item)
@@ -963,11 +1001,11 @@ class AttrConnectorWindow(QtWidgets.QMainWindow):
         ol.setSpacing(0)
         panel = QtWidgets.QFrame()
         panel.setStyleSheet(
-            "QFrame{ background:%s; border:1px solid %s; border-top-left-radius:12px; border-top-right-radius:0px; border-bottom-left-radius:12px; border-bottom-right-radius:12px; }"
+            "QFrame{ background:%s; border:1px solid %s; border-top-left-radius:12px; border-top-right-radius:12px; border-bottom-left-radius:12px; border-bottom-right-radius:12px; }"
             % (PANEL_BG_RGBA, PANEL_BORDER)
         )
         pl = QtWidgets.QVBoxLayout(panel)
-        pl.setContentsMargins(0,0,8,8)
+        pl.setContentsMargins(0,0,0,8)
         pl.setSpacing(6)
         self.title = TitleBar(self, "Attribute Connector")
         pl.addWidget(self.title)
