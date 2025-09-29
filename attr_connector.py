@@ -248,10 +248,11 @@ class TitleBar(QtWidgets.QWidget):
         super(TitleBar, self).__init__(parent)
         self._drag = None
         self.setFixedHeight(50)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         self.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.setStyleSheet(
-            "background-color: %s; border-top-left-radius:12px; border-bottom-left-radius:0px;"
-            " border-top-right-radius:12px; border-bottom-right-radius:0px;" % TITLE_BG_RGBA
+            "background-color: %s; border-top-left-radius:12px; border-top-right-radius:12px;"
+            " border-bottom-left-radius:0px; border-bottom-right-radius:0px; margin:0px;" % TITLE_BG_RGBA
         )
         lay = QtWidgets.QHBoxLayout(self)
         lay.setContentsMargins(18, 8, 10, 8)
@@ -673,10 +674,7 @@ class AttrConnectorWidget(QtWidgets.QWidget):
 
         self.tbl_src = ReorderableTableWidget(0,4)
         self.tbl_src.setHorizontalHeaderLabels(["#", "Object", "Attribute", ""])
-        self.tbl_src.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
-        self.tbl_src.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
-        self.tbl_src.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
-        self.tbl_src.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
+        self._setup_table(self.tbl_src)
         self.tbl_src_container = QtWidgets.QFrame()
         self.tbl_src_container.setObjectName("tableContainerLeft")
         self.tbl_src_container.setStyleSheet(
@@ -715,10 +713,7 @@ class AttrConnectorWidget(QtWidgets.QWidget):
 
         self.tbl_tgt = ReorderableTableWidget(0,4)
         self.tbl_tgt.setHorizontalHeaderLabels(["#", "Object", "Attribute", ""])
-        self.tbl_tgt.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
-        self.tbl_tgt.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
-        self.tbl_tgt.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
-        self.tbl_tgt.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
+        self._setup_table(self.tbl_tgt)
         self.tbl_tgt_container = QtWidgets.QFrame()
         self.tbl_tgt_container.setObjectName("tableContainerRight")
         self.tbl_tgt_container.setStyleSheet(
@@ -777,6 +772,19 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         self.btn_preview.clicked.connect(self.on_preview)          # now on_preview exists
         self.btn_connect.clicked.connect(self.on_connect)
         self.btn_disconnect.clicked.connect(self.on_disconnect)
+
+    def _setup_table(self, table):
+        header = table.horizontalHeader()
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.Fixed)
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(3, QtWidgets.QHeaderView.Fixed)
+        header.setDefaultAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        table.setColumnWidth(0, 60)
+        table.setColumnWidth(3, 50)
+        table.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        table.setAlternatingRowColors(False)
+        table.verticalHeader().setDefaultSectionSize(TABLE_ROW_HEIGHT)
 
     def log_status(self, lines):
         self.txt_log.clear()
@@ -997,13 +1005,18 @@ class AttrConnectorWindow(QtWidgets.QMainWindow):
         outer = QtWidgets.QWidget()
         outer.setStyleSheet("background: transparent;")
         ol = QtWidgets.QVBoxLayout(outer)
-        ol.setContentsMargins(10,10,10,10)
+        ol.setContentsMargins(0,0,0,0)
         ol.setSpacing(0)
         panel = QtWidgets.QFrame()
         panel.setStyleSheet(
             "QFrame{ background:%s; border:1px solid %s; border-top-left-radius:12px; border-top-right-radius:12px; border-bottom-left-radius:12px; border-bottom-right-radius:12px; }"
             % (PANEL_BG_RGBA, PANEL_BORDER)
         )
+        shadow = QtWidgets.QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(28)
+        shadow.setOffset(0, 6)
+        shadow.setColor(QtGui.QColor(0, 0, 0, 160))
+        panel.setGraphicsEffect(shadow)
         pl = QtWidgets.QVBoxLayout(panel)
         pl.setContentsMargins(0,0,0,8)
         pl.setSpacing(6)
