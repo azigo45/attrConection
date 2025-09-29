@@ -74,27 +74,38 @@ cmds = _maya_cmds
 mel = _maya_mel
 omui = _omui
 
-# Appearance constants (Aurora-inspired light theme)
-PANEL_BG_RGBA = "qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #ffffff, stop:1 #e8edff)"
-TITLE_BG_RGBA = "qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #4f46e5, stop:1 #7c3aed)"
-TITLE_TEXT = "#f5f7ff"
-ACCENT_COLOR = "#ff7a45"
-ACCENT_TEXT = "#ffffff"
-DARK_1 = "#eef1f8"
-DARK_2 = "#ffffff"
-PANEL_BORDER = "#c7d2f3"
-LABEL_LIGHT = "#1f243d"
-TEXT_MUTED = "#5d6887"
-INPUT_BG = "#f7f9ff"
-TABLE_BG = "#ffffff"
-TABLE_HEADER_BG = "#f2f5ff"
-TABLE_GRID = "#d6def6"
-TABLE_SELECTION = "#ffe5d0"
-TABLE_SELECTION_TEXT = "#2c3152"
-REMOVE_BTN_BG = "#ff5c7a"
-REMOVE_BTN_BG_HOVER = "#ff7d95"
-REMOVE_BTN_BG_PRESS = "#d93b59"
-WINDOW_NAME = "AttrConnector_Aurora_Theme"
+# Appearance constants (Graphite inspired professional theme)
+PANEL_BG_RGBA = (
+    "qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, "
+    "stop:0 rgba(58,63,72,235), stop:1 rgba(43,47,55,228))"
+)
+TITLE_BG_RGBA = (
+    "qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, "
+    "stop:0 rgba(34,39,47,245), stop:1 rgba(27,31,38,245))"
+)
+TITLE_TEXT = "#E6EBF4"
+ACCENT_COLOR = "#6FA9BC"
+ACCENT_TEXT = "#F4F7FB"
+DARK_1 = "#242830"
+DARK_1_LAYER = "rgba(36,40,47,0.92)"
+DARK_2 = "#2C313A"
+DARK_2_LAYER = "rgba(44,49,58,0.9)"
+PANEL_BORDER = "rgba(120,134,154,140)"
+LABEL_LIGHT = "#E2E7F0"
+TEXT_MUTED = "#9FA7B8"
+INPUT_BG = "#343944"
+INPUT_BG_LAYER = "rgba(52,57,66,0.88)"
+TABLE_BG = "#2B3038"
+TABLE_BG_LAYER = "rgba(43,47,56,0.88)"
+TABLE_HEADER_BG = "#353A45"
+TABLE_GRID = "#3F4653"
+TABLE_SELECTION = "#6FA9BC"
+TABLE_SELECTION_SOFT = "rgba(111,169,188,0.45)"
+TABLE_SELECTION_TEXT = "#0F1216"
+REMOVE_BTN_BG = "#D97B8A"
+REMOVE_BTN_BG_HOVER = "#E68C9A"
+REMOVE_BTN_BG_PRESS = "#B56372"
+WINDOW_NAME = "AttrConnector_Graphite_Theme"
 TABLE_ROW_HEIGHT = 34
 
 # Maya main window helper
@@ -180,14 +191,15 @@ def _btn_style_basic():
     return """
     QPushButton {
         color: %s;
-        border: 2px solid %s;
+        border: 1px solid %s;
         padding: 10px 22px;
-        border-radius: 18px;
+        border-radius: 16px;
         background-color: %s;
-        font-weight:700;
+        font-weight:600;
         font-size: 12px;
         letter-spacing: 0.6px;
         font-family: "Segoe UI", "Helvetica Neue", Arial;
+        background-clip: padding;
     }
     QPushButton:hover {
         background-color: %s;
@@ -214,11 +226,11 @@ def _btn_style_gray():
     return """
     QPushButton {
         color: %s;
-        border: 2px solid %s;
+        border: 1px solid %s;
         background-color: %s;
         padding: 10px 22px;
-        border-radius: 18px;
-        font-weight:600;
+        border-radius: 16px;
+        font-weight:500;
         font-size: 12px;
         letter-spacing: 0.4px;
         font-family: "Segoe UI", "Helvetica Neue", Arial;
@@ -239,10 +251,10 @@ def _btn_style_remove():
     QPushButton {
         background-color: %s;
         color: %s;
-        border: 2px solid %s;
+        border: 1px solid %s;
         border-radius: 14px;
-        font-weight: 700;
-        font-size: 14px;
+        font-weight: 600;
+        font-size: 13px;
         min-width: 34px;
         min-height: 34px;
         font-family: "Segoe UI", "Helvetica Neue", Arial;
@@ -254,7 +266,13 @@ def _btn_style_remove():
         background-color: %s;
     }
     QPushButton:focus { outline: none; }
-    """ % (REMOVE_BTN_BG, ACCENT_TEXT, QtGui.QColor(REMOVE_BTN_BG).darker(120).name(), REMOVE_BTN_BG_HOVER, REMOVE_BTN_BG_PRESS)
+    """ % (
+        REMOVE_BTN_BG,
+        ACCENT_TEXT,
+        QtGui.QColor(REMOVE_BTN_BG).darker(115).name(),
+        REMOVE_BTN_BG_HOVER,
+        REMOVE_BTN_BG_PRESS,
+    )
 
 # Title bar (no refresh)
 class TitleBar(QtWidgets.QWidget):
@@ -274,41 +292,52 @@ class TitleBar(QtWidgets.QWidget):
                 border-bottom-left-radius: 0px;
                 border-bottom-right-radius: 0px;
                 margin: 0px;
+                border-bottom: 1px solid rgba(120,134,154,0.45);
             }
             """ % TITLE_BG_RGBA
         )
         lay = QtWidgets.QHBoxLayout(self)
-        lay.setContentsMargins(24, 16, 20, 16)
+        lay.setContentsMargins(24, 14, 20, 14)
         lay.setSpacing(16)
 
-        self.logo = QtWidgets.QLabel("A·C")
+        self.logo = QtWidgets.QLabel("AC")
         self.logo.setObjectName("titleBadge")
         self.logo.setAlignment(QtCore.Qt.AlignCenter)
         self.logo.setFixedSize(48, 48)
         self.logo.setStyleSheet(
             """
             QLabel#titleBadge {
-                background-color: %s;
+                background-color: rgba(255,255,255,0.05);
                 color: %s;
                 border-radius: 16px;
-                font-weight: 700;
-                font-size: 18px;
-                border: 2px solid rgba(255,255,255,0.35);
+                font-weight: 600;
+                font-size: 17px;
+                border: 1px solid rgba(255,255,255,0.18);
                 letter-spacing: 1px;
             }
-            """ % (ACCENT_COLOR, ACCENT_TEXT)
+            """ % TITLE_TEXT
         )
+        badge_shadow = QtWidgets.QGraphicsDropShadowEffect(self.logo)
+        badge_shadow.setBlurRadius(24)
+        badge_shadow.setOffset(0, 6)
+        badge_shadow.setColor(QtGui.QColor(15, 18, 24, 140))
+        self.logo.setGraphicsEffect(badge_shadow)
         lay.addWidget(self.logo, 0, QtCore.Qt.AlignVCenter)
 
         text_block = QtWidgets.QVBoxLayout()
         text_block.setContentsMargins(0, 0, 0, 0)
         text_block.setSpacing(2)
-        self.label = QtWidgets.QLabel(title.upper())
-        self.label.setStyleSheet("color:%s; font-weight:700; font-size:14px; letter-spacing:1.2px;" % TITLE_TEXT)
+        self.label = QtWidgets.QLabel(title)
+        self.label.setStyleSheet(
+            "color:%s; font-weight:600; font-size:14px; letter-spacing:0.8px; text-transform:none;"
+            % TITLE_TEXT
+        )
         self.label.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
         text_block.addWidget(self.label)
-        self.subtitle = QtWidgets.QLabel("Connect Maya attributes with confidence")
-        self.subtitle.setStyleSheet("color: rgba(245,247,255,0.75); font-size:11px; letter-spacing:0.6px;")
+        self.subtitle = QtWidgets.QLabel("Precision attribute routing for production rigs")
+        self.subtitle.setStyleSheet(
+            "color: rgba(230,235,244,0.65); font-size:11px; letter-spacing:0.5px;"
+        )
         self.subtitle.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
         text_block.addWidget(self.subtitle)
         lay.addLayout(text_block, 1)
@@ -321,18 +350,18 @@ class TitleBar(QtWidgets.QWidget):
             """
             QPushButton#titleCloseButton {
                 color: %s;
-                background: rgba(255, 255, 255, 0.12);
-                border: 1px solid rgba(245,247,255,0.35);
+                background: rgba(79, 141, 158, 0.22);
+                border: 1px solid rgba(126, 178, 193, 0.38);
                 border-radius: 18px;
                 padding: 8px 18px;
                 font-weight: 600;
                 letter-spacing: 0.6px;
             }
             QPushButton#titleCloseButton:hover {
-                background: rgba(255, 255, 255, 0.24);
+                background: rgba(79, 141, 158, 0.32);
             }
             QPushButton#titleCloseButton:pressed {
-                background: rgba(255, 255, 255, 0.18);
+                background: rgba(79, 141, 158, 0.28);
             }
             QPushButton#titleCloseButton:focus { outline: none; }
             """ % TITLE_TEXT
@@ -386,6 +415,9 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
                 font-family: "Segoe UI", "Helvetica Neue", Arial;
                 alternate-background-color: %s;
             }
+            QTableWidget::item {
+                padding: 6px;
+            }
             QTableWidget::item:selected {
                 background: %s;
                 color: %s;
@@ -415,10 +447,40 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
                 background: %s;
                 border: 0;
             }
+            QScrollBar:vertical {
+                background: transparent;
+                width: 10px;
+                margin: 12px 4px 12px 0;
+            }
+            QScrollBar::handle:vertical {
+                background: rgba(120,134,154,0.45);
+                border-radius: 4px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: rgba(120,134,154,0.6);
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+            QScrollBar:horizontal {
+                background: transparent;
+                height: 10px;
+                margin: 0 12px 4px 12px;
+            }
+            QScrollBar::handle:horizontal {
+                background: rgba(120,134,154,0.45);
+                border-radius: 4px;
+            }
+            QScrollBar::handle:horizontal:hover {
+                background: rgba(120,134,154,0.6);
+            }
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+                width: 0px;
+            }
         """ % (
             LABEL_LIGHT,
             TABLE_GRID,
-            TABLE_SELECTION,
+            TABLE_SELECTION_SOFT,
             TABLE_SELECTION_TEXT,
             QtGui.QColor(TABLE_BG).lighter(103).name(),
             TABLE_SELECTION,
@@ -645,7 +707,7 @@ class AttributePickerDialog(QtWidgets.QDialog):
         )
         top_row.addWidget(lbl)
         self.edit_search = QtWidgets.QLineEdit()
-        self.edit_search.setPlaceholderText("search attribute...")
+        self.edit_search.setPlaceholderText("Search attribute…")
         self.edit_search.setStyleSheet(
             """
             QLineEdit {
@@ -664,7 +726,15 @@ class AttributePickerDialog(QtWidgets.QDialog):
             QLineEdit::placeholder {
                 color:%s;
             }
-            """ % (INPUT_BG, LABEL_LIGHT, PANEL_BORDER, TABLE_SELECTION, TABLE_SELECTION_TEXT, ACCENT_COLOR, TEXT_MUTED)
+            """ % (
+                INPUT_BG_LAYER,
+                LABEL_LIGHT,
+                PANEL_BORDER,
+                TABLE_SELECTION_SOFT,
+                TABLE_SELECTION_TEXT,
+                ACCENT_COLOR,
+                TEXT_MUTED,
+            )
         )
         top_row.addWidget(self.edit_search,1)
         body_layout.addLayout(top_row)
@@ -694,11 +764,11 @@ class AttributePickerDialog(QtWidgets.QDialog):
             "    border-radius:10px;"
             "}"
             % (
-                DARK_2,
+                DARK_2_LAYER,
                 LABEL_LIGHT,
                 PANEL_BORDER,
-                QtGui.QColor(TABLE_SELECTION).lighter(125).name(),
-                TABLE_SELECTION,
+                QtGui.QColor(TABLE_SELECTION).lighter(120).name(),
+                TABLE_SELECTION_SOFT,
                 TABLE_SELECTION_TEXT,
             )
         )
@@ -765,7 +835,7 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         super(AttrConnectorWidget, self).__init__(parent)
         self.setStyleSheet(
             "background-color:%s; color:%s; font-family:'Segoe UI', 'Helvetica Neue', Arial; font-size:12px;"
-            % (DARK_1, LABEL_LIGHT)
+            % (DARK_1_LAYER, LABEL_LIGHT)
         )
         self._build_ui()
         self._connect_signals()
@@ -802,7 +872,7 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         self.tbl_src_container.setObjectName("tableContainerLeft")
         self.tbl_src_container.setStyleSheet(
             "#tableContainerLeft { background:%s; border:1px solid %s; border-radius:18px; padding:10px; }"
-            % (TABLE_BG, PANEL_BORDER)
+            % (TABLE_BG_LAYER, PANEL_BORDER)
         )
         src_container_layout = QtWidgets.QVBoxLayout(self.tbl_src_container)
         src_container_layout.setContentsMargins(6,6,6,10)
@@ -842,7 +912,7 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         self.tbl_tgt_container.setObjectName("tableContainerRight")
         self.tbl_tgt_container.setStyleSheet(
             "#tableContainerRight { background:%s; border:1px solid %s; border-radius:18px; padding:10px; }"
-            % (TABLE_BG, PANEL_BORDER)
+            % (TABLE_BG_LAYER, PANEL_BORDER)
         )
         tgt_container_layout = QtWidgets.QVBoxLayout(self.tbl_tgt_container)
         tgt_container_layout.setContentsMargins(6,6,6,10)
@@ -879,7 +949,7 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         self.txt_log.setStyleSheet(
             "background: %s; color:%s; border:1px solid %s; border-radius:18px; padding:12px;"
             "selection-background-color:%s; selection-color:%s; font-family:'Segoe UI','Helvetica Neue',Arial;"
-            % (DARK_2, LABEL_LIGHT, PANEL_BORDER, TABLE_SELECTION, TABLE_SELECTION_TEXT)
+            % (DARK_2_LAYER, LABEL_LIGHT, PANEL_BORDER, TABLE_SELECTION_SOFT, TABLE_SELECTION_TEXT)
         )
         L.addWidget(self.txt_log)
 
@@ -1139,9 +1209,9 @@ class AttrConnectorWindow(QtWidgets.QMainWindow):
             % (PANEL_BG_RGBA, PANEL_BORDER)
         )
         shadow = QtWidgets.QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(36)
-        shadow.setOffset(0, 12)
-        shadow.setColor(QtGui.QColor(60, 80, 140, 90))
+        shadow.setBlurRadius(42)
+        shadow.setOffset(0, 18)
+        shadow.setColor(QtGui.QColor(10, 12, 18, 150))
         panel.setGraphicsEffect(shadow)
         pl = QtWidgets.QVBoxLayout(panel)
         pl.setContentsMargins(0,0,0,18)
