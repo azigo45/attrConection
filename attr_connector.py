@@ -1186,7 +1186,7 @@ class AttrConnectorWidget(QtWidgets.QWidget):
                     if not c or "." not in c:
                         continue
                     node, attr = c.split(".", 1)
-                    if node != src:
+                    if src and node != src:
                         continue
                     if sattr and sattr != "none" and attr != sattr:
                         continue
@@ -1246,6 +1246,16 @@ class AttrConnectorWidget(QtWidgets.QWidget):
                 if sattr == "none":
                     sattr = ""
                 pairs.append((src, sattr, tgt, tattr))
+            return pairs
+
+        # with no explicit source rows, disconnect everything driving the targets
+        if not unique_src_objs:
+            for j in range(tgt_count):
+                tgt = tgt_objs[j]
+                tattr = tgt_attrs[j]
+                if not tgt or not tattr or tattr == "none":
+                    continue
+                pairs.append(("", "", tgt, tattr))
             return pairs
 
         # otherwise match rows pair-wise
