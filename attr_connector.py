@@ -952,18 +952,28 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         tgt_attrs = [self.tbl_tgt.item(i,2).text() if self.tbl_tgt.item(i,2) else "none" for i in range(tgt_count)]
 
         status_lines = []
-        # single source -> all targets
-        if src_count == 1:
-            src = src_objs[0]; sattr = src_attrs[0]
-            if not sattr or sattr == "none":
+        unique_src_objs = [o for o in src_objs if o]
+        if unique_src_objs:
+            unique_src_objs = list(OrderedDict.fromkeys(unique_src_objs))
+
+        # single source object -> connect all targets to it
+        if len(unique_src_objs) == 1:
+            src = unique_src_objs[0]
+            valid_attrs = [a for a in src_attrs if a and a != "none"]
+            if not valid_attrs:
                 self.log_status(["Source attribute missing"])
                 return
+            fallback_attr = valid_attrs[0]
             cmds.undoInfo(openChunk=True)
             try:
                 for j in range(tgt_count):
                     tgt = tgt_objs[j]; tattr = tgt_attrs[j]
-                    if not tattr or tattr == "none":
+                    if not tgt or not tattr or tattr == "none":
                         continue
+                    if j < len(src_attrs) and src_attrs[j] and src_attrs[j] != "none":
+                        sattr = src_attrs[j]
+                    else:
+                        sattr = fallback_attr
                     src_full = "{}.".format(src) + sattr
                     tgt_full = "{}.".format(tgt) + tattr
                     try:
