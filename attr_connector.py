@@ -279,6 +279,7 @@ def _checkbox_style():
     checked_border = QtGui.QColor(GRADIENT_END).name()
     unchecked_bg = QtGui.QColor(DARK_1).lighter(115).name()
     disabled_bg = QtGui.QColor(DARK_1).darker(110).name()
+    check_color = QtGui.QColor(ACCENT_TEXT).name().replace("#", "%23")
     return """
     QCheckBox {
         color: %s;
@@ -300,9 +301,11 @@ def _checkbox_style():
     QCheckBox::indicator:checked {
         border: 1px solid %s;
         background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %s, stop:1 %s);
+        image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'><path d='M4.2 9.4l3 3.1 6.6-6.9' fill='none' stroke='%s' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
     }
     QCheckBox::indicator:unchecked {
         background: %s;
+        image: none;
     }
     QCheckBox::indicator:disabled {
         background: %s;
@@ -316,6 +319,7 @@ def _checkbox_style():
         checked_border,
         GRADIENT_START,
         GRADIENT_END,
+        check_color,
         unchecked_bg,
         disabled_bg,
     )
