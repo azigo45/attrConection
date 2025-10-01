@@ -851,6 +851,47 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         for l in lines:
             self.txt_log.appendPlainText(l)
 
+    def _connect_single_pair(self, src_obj, src_attr, tgt_obj, tgt_attr, context=None):
+        """Attempt to connect two plugs and return (success, message)."""
+        prefix = "[%s] " % context if context else ""
+
+        if not src_obj:
+            return False, "%sError: Source object is not specified." % prefix
+        if not src_attr or src_attr == "none":
+            return False, "%sError: Source attribute is not specified for %s." % (
+                prefix,
+                src_obj,
+            )
+        if not tgt_obj:
+            return False, "%sError: Target object is not specified." % prefix
+        if not tgt_attr or tgt_attr == "none":
+            label = tgt_obj if tgt_obj else "target"
+            return False, "%sError: Target attribute is not specified for %s." % (
+                prefix,
+                label,
+            )
+
+        src_full = "{}.{}".format(src_obj, src_attr)
+        tgt_full = "{}.{}".format(tgt_obj, tgt_attr)
+
+        if not cmds.objExists(src_full):
+            return False, "%sError: Source attribute does not exist: %s." % (prefix, src_full)
+        if not cmds.objExists(tgt_full):
+            return False, "%sError: Target attribute does not exist: %s." % (prefix, tgt_full)
+
+        try:
+            cmds.connectAttr(src_full, tgt_full, force=True)
+        except Exception as exc:  # pragma: no cover - requires Maya runtime errors
+            reason = str(exc).strip() or exc.__class__.__name__
+            return False, "%sError: Failed to connect %s -> %s (%s)." % (
+                prefix,
+                src_full,
+                tgt_full,
+                reason,
+            )
+
+        return True, "%sConnected %s -> %s" % (prefix, src_full, tgt_full)
+
     def update_numbering(self):
         for tbl in (self.tbl_src, self.tbl_tgt):
             for r in range(tbl.rowCount()):
@@ -967,21 +1008,20 @@ class AttrConnectorWidget(QtWidgets.QWidget):
             cmds.undoInfo(openChunk=True)
             try:
                 for j in range(tgt_count):
-                    tgt = tgt_objs[j]; tattr = tgt_attrs[j]
-                    if not tgt or not tattr or tattr == "none":
-                        continue
+                    tgt = tgt_objs[j]
+                    tattr = tgt_attrs[j]
                     if j < len(src_attrs) and src_attrs[j] and src_attrs[j] != "none":
                         sattr = src_attrs[j]
                     else:
                         sattr = fallback_attr
-                    src_full = "{}.".format(src) + sattr
-                    tgt_full = "{}.".format(tgt) + tattr
-                    try:
-                        if cmds.objExists(src_full) and cmds.objExists(tgt_full):
-                            cmds.connectAttr(src_full, tgt_full, force=True)
-                            status_lines.append("Connected %s -> %s" % (src_full, tgt_full))
-                    except Exception:
-                        continue
+                    ok, msg = self._connect_single_pair(
+                        src,
+                        sattr,
+                        tgt,
+                        tattr,
+                        context="target row %d" % (j + 1),
+                    )
+                    status_lines.append(msg)
             finally:
                 cmds.undoInfo(closeChunk=True)
             self.log_status(status_lines if status_lines else ["No connections made"])
@@ -995,18 +1035,18 @@ class AttrConnectorWidget(QtWidgets.QWidget):
             cmds.undoInfo(openChunk=True)
             try:
                 for i in range(src_count):
-                    src = src_objs[i]; sattr = src_attrs[i]
-                    tgt = tgt_objs[i]; tattr = tgt_attrs[i]
-                    if not sattr or sattr == "none" or not tattr or tattr == "none":
-                        continue
-                    src_full = "{}.".format(src) + sattr
-                    tgt_full = "{}.".format(tgt) + tattr
-                    try:
-                        if cmds.objExists(src_full) and cmds.objExists(tgt_full):
-                            cmds.connectAttr(src_full, tgt_full, force=True)
-                            status_lines.append("Connected %s -> %s" % (src_full, tgt_full))
-                    except Exception:
-                        continue
+                    src = src_objs[i]
+                    sattr = src_attrs[i]
+                    tgt = tgt_objs[i]
+                    tattr = tgt_attrs[i]
+                    ok, msg = self._connect_single_pair(
+                        src,
+                        sattr,
+                        tgt,
+                        tattr,
+                        context="row %d" % (i + 1),
+                    )
+                    status_lines.append(msg)
             finally:
                 cmds.undoInfo(closeChunk=True)
             self.log_status(status_lines if status_lines else ["No connections made"])
