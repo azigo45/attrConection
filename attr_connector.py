@@ -1087,19 +1087,25 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         cmds.undoInfo(openChunk=True)
         try:
             for src, sattr, tgt, tattr in pairs:
-                if not sattr or sattr == "none" or not tattr or tattr == "none":
+                if not tgt or not tattr or tattr == "none":
                     continue
-                tf = "{}.".format(tgt) + tattr
+                tf = "{}.{}".format(tgt, tattr)
                 if not cmds.objExists(tf):
                     continue
                 inc = cmds.listConnections(tf, source=True, destination=False, plugs=True) or []
                 for c in inc:
-                    if c == "{}.".format(src) + sattr:
-                        try:
-                            cmds.disconnectAttr(c, tf)
-                            status_lines.append("Disconnected %s -> %s" % (c, tf))
-                        except Exception:
-                            continue
+                    if not c or "." not in c:
+                        continue
+                    node, attr = c.split(".", 1)
+                    if node != src:
+                        continue
+                    if sattr and sattr != "none" and attr != sattr:
+                        continue
+                    try:
+                        cmds.disconnectAttr(c, tf)
+                        status_lines.append("Disconnected %s -> %s" % (c, tf))
+                    except Exception:
+                        continue
         finally:
             cmds.undoInfo(closeChunk=True)
         self.log_status(status_lines if status_lines else ["No disconnections"])
