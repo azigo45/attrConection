@@ -108,7 +108,7 @@ def maya_main_window():
     return None
 
 # Attribute helpers
-def list_directional_attributes(obj, direction=None):
+def list_directional_attributes(obj, direction=None, include_connected=False):
     """Return attributes filtered by their connection direction."""
 
     try:
@@ -124,10 +124,11 @@ def list_directional_attributes(obj, direction=None):
                 if cmds.attributeQuery(attr, node=obj, readable=True):
                     out.append(attr)
             elif direction == "input":
-                if cmds.attributeQuery(attr, node=obj, writable=True) and cmds.getAttr(plug, settable=True):
-                    out.append(attr)
+                if cmds.attributeQuery(attr, node=obj, writable=True):
+                    if include_connected or cmds.getAttr(plug, settable=True):
+                        out.append(attr)
             else:
-                if cmds.getAttr(plug, settable=True):
+                if include_connected or cmds.getAttr(plug, settable=True):
                     out.append(attr)
         except Exception:
             continue
@@ -143,10 +144,13 @@ def get_attr_type(node, attr):
     except Exception:
         return None
 
-def categorize_attributes_for_objs(objs, direction=None):
+def categorize_attributes_for_objs(objs, direction=None, include_connected=False):
     if not objs:
         return OrderedDict(), set(), set()
-    per = [set(list_directional_attributes(o, direction=direction)) for o in objs]
+    per = [
+        set(list_directional_attributes(o, direction=direction, include_connected=include_connected))
+        for o in objs
+    ]
     common = set.intersection(*per) if len(per) > 1 else set(per[0]) if per else set()
     union = set.union(*per) if per else set()
     cats = {}
@@ -156,6 +160,18 @@ def categorize_attributes_for_objs(objs, direction=None):
             if cmds.objExists(o) and cmds.attributeQuery(attr, node=o, exists=True):
                 a_type = get_attr_type(o, attr)
                 break
+        has_non_settable = False
+        if include_connected:
+            for o in objs:
+                plug = "{0}.{1}".format(o, attr)
+                if not cmds.objExists(plug):
+                    continue
+                try:
+                    if not cmds.getAttr(plug, settable=True):
+                        has_non_settable = True
+                        break
+                except Exception:
+                    continue
         name = attr.lower()
         if any(k in name for k in ("translate","rotate","scale","pivot","orient","aim")):
             cat = "Transform"
@@ -173,7 +189,7 @@ def categorize_attributes_for_objs(objs, direction=None):
             cat = "String"
         else:
             cat = "Other"
-        cats.setdefault(cat, []).append((attr, attr in common))
+        cats.setdefault(cat, []).append((attr, attr in common, has_non_settable))
     order = ["Transform","Vector/Compound","Numeric","Boolean","Enum","String","Display","Other"]
     ordered = OrderedDict()
     for k in order:
@@ -659,6 +675,11 @@ class AttributePickerDialog(QtWidgets.QDialog):
             "background:#232427; color:#e6e6e6; border-radius:8px; padding:6px;"
         )
         top_row.addWidget(self.edit_search,1)
+        top_row.addSpacing(8)
+        self.chk_show_connected = QtWidgets.QCheckBox("Show connected")
+        self.chk_show_connected.setCursor(QtCore.Qt.PointingHandCursor)
+        self.chk_show_connected.setStyleSheet("color:%s; background: transparent;" % LABEL_LIGHT)
+        top_row.addWidget(self.chk_show_connected)
         body_layout.addLayout(top_row)
 
         self.tree = QtWidgets.QTreeWidget()
@@ -688,19 +709,28 @@ class AttributePickerDialog(QtWidgets.QDialog):
         btn_row.addWidget(self.btn_apply)
         body_layout.addLayout(btn_row)
         self.edit_search.textChanged.connect(self._fill_tree)
+        self.chk_show_connected.toggled.connect(self._fill_tree)
         self.tree.itemDoubleClicked.connect(self._on_double)
         self.btn_apply.clicked.connect(self._on_apply)
         self.btn_cancel.clicked.connect(self.reject)
 
-    def _fill_tree(self):
+    def _fill_tree(self, *args):
         self.tree.clear()
-        cats, common, union = categorize_attributes_for_objs(self.objects, direction=self.direction)
+        show_connected = getattr(self, "chk_show_connected", None)
+        include_connected = bool(show_connected.isChecked()) if show_connected else False
+        cats, common, union = categorize_attributes_for_objs(
+            self.objects,
+            direction=self.direction,
+            include_connected=include_connected,
+        )
         q = (self.edit_search.text() or "").lower()
         for cat, items in cats.items():
             top = QtWidgets.QTreeWidgetItem(self.tree)
             top.setText(0, cat)
             top.setFlags(top.flags() & ~QtCore.Qt.ItemIsSelectable)
-            for attr, present_all in items:
+            for data in items:
+                attr, present_all = data[0], data[1]
+                has_non_settable = data[2] if len(data) > 2 else False
                 if q and q not in attr.lower():
                     continue
                 child = QtWidgets.QTreeWidgetItem(top)
@@ -708,6 +738,12 @@ class AttributePickerDialog(QtWidgets.QDialog):
                 child.setData(0, QtCore.Qt.UserRole, attr)
                 if not present_all:
                     f = child.font(0); f.setItalic(True); child.setFont(0, f)
+                if has_non_settable:
+                    child.setForeground(0, QtGui.QBrush(QtGui.QColor("#f1b16a")))
+                    child.setToolTip(0, "Attribute may already be connected or locked.")
+            if top.childCount() == 0:
+                idx = self.tree.indexOfTopLevelItem(top)
+                self.tree.takeTopLevelItem(idx)
         if q:
             self.tree.expandAll()
         else:
