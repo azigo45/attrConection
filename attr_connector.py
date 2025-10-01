@@ -288,9 +288,7 @@ class TitleBar(QtWidgets.QWidget):
             " border-top-right-radius:12px; border-bottom-right-radius:0px;" % TITLE_BG_RGBA
         )
         lay = QtWidgets.QHBoxLayout(self)
-        # Provide symmetric padding so the title text and close button line up
-        # with the primary controls inside the panel body.
-        lay.setContentsMargins(12, 8, 12, 8)
+        lay.setContentsMargins(0, 8, 8, 8)
         lay.setSpacing(8)
         self.label = QtWidgets.QLabel(title)
         self.label.setStyleSheet("color:%s; font-weight:600; font-size:12px;" % TITLE_TEXT)
@@ -811,8 +809,6 @@ class AttrConnectorWidget(QtWidgets.QWidget):
 
         actions = QtWidgets.QHBoxLayout()
         actions.setContentsMargins(0,0,0,0)
-        actions.setSpacing(12)
-        actions.addStretch()
         self.btn_preview = QtWidgets.QPushButton("Preview")
         self.btn_preview.setStyleSheet(_btn_style_gray())
         self.btn_connect = QtWidgets.QPushButton("Connect")
@@ -822,6 +818,7 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         actions.addWidget(self.btn_preview)
         actions.addWidget(self.btn_connect)
         actions.addWidget(self.btn_disconnect)
+        actions.addStretch()
         L.addLayout(actions)
 
         self.txt_log = QtWidgets.QPlainTextEdit()
