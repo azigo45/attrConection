@@ -272,6 +272,54 @@ def _btn_style_remove():
     QPushButton:focus { outline: none; }
     """ % (REMOVE_BTN_BG, ACCENT_TEXT, REMOVE_BTN_BG_HOVER, REMOVE_BTN_BG_PRESS)
 
+
+def _checkbox_style():
+    border = QtGui.QColor(PANEL_BORDER).lighter(120).name()
+    hover_border = QtGui.QColor(GRADIENT_END).lighter(130).name()
+    checked_border = QtGui.QColor(GRADIENT_END).name()
+    unchecked_bg = QtGui.QColor(DARK_1).lighter(115).name()
+    disabled_bg = QtGui.QColor(DARK_1).darker(110).name()
+    return """
+    QCheckBox {
+        color: %s;
+        background: transparent;
+        padding: 2px 0;
+        font-weight: 500;
+    }
+    QCheckBox::indicator {
+        width: 18px;
+        height: 18px;
+        border-radius: 6px;
+        border: 1px solid %s;
+        background: %s;
+        margin-right: 6px;
+    }
+    QCheckBox::indicator:hover {
+        border: 1px solid %s;
+    }
+    QCheckBox::indicator:checked {
+        border: 1px solid %s;
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 %s, stop:1 %s);
+    }
+    QCheckBox::indicator:unchecked {
+        background: %s;
+    }
+    QCheckBox::indicator:disabled {
+        background: %s;
+        border-color: rgba(255,255,255,0.15);
+    }
+    """ % (
+        LABEL_LIGHT,
+        border,
+        unchecked_bg,
+        hover_border,
+        checked_border,
+        GRADIENT_START,
+        GRADIENT_END,
+        unchecked_bg,
+        disabled_bg,
+    )
+
 # Title bar (no refresh)
 class CloseButton(QtWidgets.QAbstractButton):
     def __init__(self, parent=None):
@@ -676,9 +724,10 @@ class AttributePickerDialog(QtWidgets.QDialog):
         )
         top_row.addWidget(self.edit_search,1)
         top_row.addSpacing(8)
+        top_row.addStretch()
         self.chk_show_connected = QtWidgets.QCheckBox("Show connected")
         self.chk_show_connected.setCursor(QtCore.Qt.PointingHandCursor)
-        self.chk_show_connected.setStyleSheet("color:%s; background: transparent;" % LABEL_LIGHT)
+        self.chk_show_connected.setStyleSheet(_checkbox_style())
         top_row.addWidget(self.chk_show_connected)
         body_layout.addLayout(top_row)
 
