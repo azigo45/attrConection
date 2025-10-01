@@ -108,19 +108,34 @@ def maya_main_window():
     return None
 
 # Attribute helpers
-def list_writable_attributes(obj):
+def list_directional_attributes(obj, direction=None):
+    """Return attributes filtered by their connection direction."""
+
     try:
         all_attrs = cmds.listAttr(obj) or []
     except Exception:
         return []
+
     out = []
-    for a in all_attrs:
+    for attr in all_attrs:
+        plug = "{0}.{1}".format(obj, attr)
         try:
-            if cmds.getAttr("{0}.{1}".format(obj, a), settable=True):
-                out.append(a)
+            if direction == "output":
+                if cmds.attributeQuery(attr, node=obj, readable=True):
+                    out.append(attr)
+            elif direction == "input":
+                if cmds.attributeQuery(attr, node=obj, writable=True) and cmds.getAttr(plug, settable=True):
+                    out.append(attr)
+            else:
+                if cmds.getAttr(plug, settable=True):
+                    out.append(attr)
         except Exception:
             continue
     return sorted(set(out))
+
+
+def list_writable_attributes(obj):
+    return list_directional_attributes(obj, direction="input")
 
 def get_attr_type(node, attr):
     try:
@@ -128,10 +143,10 @@ def get_attr_type(node, attr):
     except Exception:
         return None
 
-def categorize_attributes_for_objs(objs):
+def categorize_attributes_for_objs(objs, direction=None):
     if not objs:
         return OrderedDict(), set(), set()
-    per = [set(list_writable_attributes(o)) for o in objs]
+    per = [set(list_directional_attributes(o, direction=direction)) for o in objs]
     common = set.intersection(*per) if len(per) > 1 else set(per[0]) if per else set()
     union = set.union(*per) if per else set()
     cats = {}
@@ -595,9 +610,11 @@ class ReorderableTableWidget(QtWidgets.QTableWidget):
 # Attribute picker (styled)
 class AttributePickerDialog(QtWidgets.QDialog):
     attribute_chosen = QtCore.Signal(str)
-    def __init__(self, objects, parent=None):
+
+    def __init__(self, objects, parent=None, direction=None):
         super(AttributePickerDialog, self).__init__(parent)
         self.objects = list(objects)
+        self.direction = direction
         self.setWindowTitle("Pick Attribute")
         self.setMinimumSize(460,420)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Dialog)
@@ -677,7 +694,7 @@ class AttributePickerDialog(QtWidgets.QDialog):
 
     def _fill_tree(self):
         self.tree.clear()
-        cats, common, union = categorize_attributes_for_objs(self.objects)
+        cats, common, union = categorize_attributes_for_objs(self.objects, direction=self.direction)
         q = (self.edit_search.text() or "").lower()
         for cat, items in cats.items():
             top = QtWidgets.QTreeWidgetItem(self.tree)
@@ -950,7 +967,13 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         if not rows:
             return
         objs = [table.item(r,1).text() for r in rows if table.item(r,1)]
-        dlg = AttributePickerDialog(objs, parent=self)
+        direction = None
+        if table is self.tbl_src:
+            direction = "output"
+        elif table is self.tbl_tgt:
+            direction = "input"
+
+        dlg = AttributePickerDialog(objs, parent=self, direction=direction)
         def apply_attr(attr):
             sel_now = table.selectionModel().selectedRows() or []
             target_rows = [s.row() for s in sel_now] if sel_now else rows
