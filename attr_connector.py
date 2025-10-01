@@ -1168,7 +1168,7 @@ class AttrConnectorWidget(QtWidgets.QWidget):
         if not MAYA_AVAILABLE:
             self.log_status(["Preview only: Maya commands unavailable in standalone mode."])
             return
-        pairs = self.gather_pairs_1to1()
+        pairs = self.gather_pairs_for_disconnect()
         if not pairs:
             self.log_status(["No pairs to disconnect"])
             return
@@ -1207,6 +1207,58 @@ class AttrConnectorWidget(QtWidgets.QWidget):
             tgt = self.tbl_tgt.item(i,1).text() if self.tbl_tgt.item(i,1) else ""
             sattr = self.tbl_src.item(i,2).text() if self.tbl_src.item(i,2) else ""
             tattr = self.tbl_tgt.item(i,2).text() if self.tbl_tgt.item(i,2) else ""
+            pairs.append((src, sattr, tgt, tattr))
+        return pairs
+
+    def gather_pairs_for_disconnect(self):
+        src_count = self.tbl_src.rowCount()
+        tgt_count = self.tbl_tgt.rowCount()
+        src_objs = [self.tbl_src.item(i, 1).text() if self.tbl_src.item(i, 1) else "" for i in range(src_count)]
+        src_attrs = [self.tbl_src.item(i, 2).text() if self.tbl_src.item(i, 2) else "" for i in range(src_count)]
+        tgt_objs = [self.tbl_tgt.item(i, 1).text() if self.tbl_tgt.item(i, 1) else "" for i in range(tgt_count)]
+        tgt_attrs = [self.tbl_tgt.item(i, 2).text() if self.tbl_tgt.item(i, 2) else "" for i in range(tgt_count)]
+
+        pairs = []
+        unique_src_objs = [o for o in src_objs if o]
+        if unique_src_objs:
+            unique_src_objs = list(OrderedDict.fromkeys(unique_src_objs))
+
+        # if a single source drives multiple targets, apply it across all rows
+        if len(unique_src_objs) == 1:
+            src = unique_src_objs[0]
+            fallback_attr = ""
+            for attr in src_attrs:
+                if attr and attr != "none":
+                    fallback_attr = attr
+                    break
+            for j in range(tgt_count):
+                tgt = tgt_objs[j]
+                tattr = tgt_attrs[j]
+                if not tgt or not tattr or tattr == "none":
+                    continue
+                sattr = ""
+                if j < len(src_attrs):
+                    current_attr = src_attrs[j]
+                    if current_attr and current_attr != "none":
+                        sattr = current_attr
+                if not sattr:
+                    sattr = fallback_attr
+                if sattr == "none":
+                    sattr = ""
+                pairs.append((src, sattr, tgt, tattr))
+            return pairs
+
+        # otherwise match rows pair-wise
+        n = min(src_count, tgt_count)
+        for i in range(n):
+            src = src_objs[i]
+            tgt = tgt_objs[i]
+            tattr = tgt_attrs[i]
+            if not src or not tgt or not tattr or tattr == "none":
+                continue
+            sattr = src_attrs[i]
+            if sattr == "none":
+                sattr = ""
             pairs.append((src, sattr, tgt, tattr))
         return pairs
 
