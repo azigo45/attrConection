@@ -1248,6 +1248,21 @@ class AttrConnectorWidget(QtWidgets.QWidget):
                 pairs.append((src, sattr, tgt, tattr))
             return pairs
 
+        # a single target selected with multiple sources should disconnect all of them
+        if len(unique_src_objs) > 1 and tgt_count == 1:
+            tgt = tgt_objs[0]
+            tattr = tgt_attrs[0]
+            if tgt and tattr and tattr != "none":
+                for i in range(src_count):
+                    src = src_objs[i]
+                    if not src:
+                        continue
+                    sattr = src_attrs[i]
+                    if sattr == "none":
+                        sattr = ""
+                    pairs.append((src, sattr, tgt, tattr))
+            return pairs
+
         # with no explicit source rows, disconnect everything driving the targets
         if not unique_src_objs:
             for j in range(tgt_count):
@@ -1270,6 +1285,14 @@ class AttrConnectorWidget(QtWidgets.QWidget):
             if sattr == "none":
                 sattr = ""
             pairs.append((src, sattr, tgt, tattr))
+
+        # if there are more targets than sources, disconnect everything from the extras
+        for j in range(n, tgt_count):
+            tgt = tgt_objs[j]
+            tattr = tgt_attrs[j]
+            if not tgt or not tattr or tattr == "none":
+                continue
+            pairs.append(("", "", tgt, tattr))
         return pairs
 
     # ---------- the previously missing preview method ----------
