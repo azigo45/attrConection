@@ -144,11 +144,18 @@ def get_attr_type(node, attr):
     except Exception:
         return None
 
-def categorize_attributes_for_objs(objs, direction=None, include_connected=False):
+def categorize_attributes_for_objs(
+    objs,
+    direction=None,
+    include_connected=False,
+    only_connected=False,
+    include_connections=False,
+):
     if not objs:
         return OrderedDict(), set(), set()
+    include_conn = include_connected or only_connected
     per = [
-        set(list_directional_attributes(o, direction=direction, include_connected=include_connected))
+        set(list_directional_attributes(o, direction=direction, include_connected=include_conn))
         for o in objs
     ]
     common = set.intersection(*per) if len(per) > 1 else set(per[0]) if per else set()
@@ -161,17 +168,28 @@ def categorize_attributes_for_objs(objs, direction=None, include_connected=False
                 a_type = get_attr_type(o, attr)
                 break
         has_non_settable = False
-        if include_connected:
-            for o in objs:
-                plug = "{0}.{1}".format(o, attr)
-                if not cmds.objExists(plug):
-                    continue
+        connection_details = {}
+        has_any_connection = False
+        for o in objs:
+            plug = "{0}.{1}".format(o, attr)
+            if not cmds.objExists(plug):
+                continue
+            if include_conn:
                 try:
                     if not cmds.getAttr(plug, settable=True):
                         has_non_settable = True
-                        break
                 except Exception:
-                    continue
+                    pass
+            if include_connections or only_connected:
+                try:
+                    conns = cmds.listConnections(plug, plugs=True) or []
+                except Exception:
+                    conns = []
+                if conns:
+                    has_any_connection = True
+                    connection_details[o] = sorted(set(conns))
+        if only_connected and not has_any_connection:
+            continue
         name = attr.lower()
         if any(k in name for k in ("translate","rotate","scale","pivot","orient","aim")):
             cat = "Transform"
@@ -189,7 +207,7 @@ def categorize_attributes_for_objs(objs, direction=None, include_connected=False
             cat = "String"
         else:
             cat = "Other"
-        cats.setdefault(cat, []).append((attr, attr in common, has_non_settable))
+        cats.setdefault(cat, []).append((attr, attr in common, has_non_settable, connection_details))
     order = ["Transform","Vector/Compound","Numeric","Boolean","Enum","String","Display","Other"]
     ordered = OrderedDict()
     for k in order:
@@ -733,6 +751,10 @@ class AttributePickerDialog(QtWidgets.QDialog):
         self.chk_show_connected.setCursor(QtCore.Qt.PointingHandCursor)
         self.chk_show_connected.setStyleSheet(_checkbox_style())
         top_row.addWidget(self.chk_show_connected)
+        self.chk_only_connected = QtWidgets.QCheckBox("Only connected")
+        self.chk_only_connected.setCursor(QtCore.Qt.PointingHandCursor)
+        self.chk_only_connected.setStyleSheet(_checkbox_style())
+        top_row.addWidget(self.chk_only_connected)
         body_layout.addLayout(top_row)
 
         self.tree = QtWidgets.QTreeWidget()
@@ -750,6 +772,7 @@ class AttributePickerDialog(QtWidgets.QDialog):
             % (TITLE_BG_RGBA, LABEL_LIGHT)
         )
         body_layout.addWidget(self.tree, 1)
+        self.tree.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 
         btn_row = QtWidgets.QHBoxLayout()
         btn_row.setContentsMargins(0,0,0,0)
@@ -762,19 +785,27 @@ class AttributePickerDialog(QtWidgets.QDialog):
         btn_row.addWidget(self.btn_apply)
         body_layout.addLayout(btn_row)
         self.edit_search.textChanged.connect(self._fill_tree)
-        self.chk_show_connected.toggled.connect(self._fill_tree)
+        self.chk_show_connected.toggled.connect(self._on_show_connected_toggled)
+        self.chk_only_connected.toggled.connect(self._on_only_connected_toggled)
         self.tree.itemDoubleClicked.connect(self._on_double)
         self.btn_apply.clicked.connect(self._on_apply)
         self.btn_cancel.clicked.connect(self.reject)
+        self.tree.customContextMenuRequested.connect(self._on_tree_context_menu)
 
     def _fill_tree(self, *args):
         self.tree.clear()
         show_connected = getattr(self, "chk_show_connected", None)
+        only_widget = getattr(self, "chk_only_connected", None)
+        only_connected = bool(only_widget.isChecked()) if only_widget else False
         include_connected = bool(show_connected.isChecked()) if show_connected else False
+        if only_connected and not include_connected:
+            include_connected = True
         cats, common, union = categorize_attributes_for_objs(
             self.objects,
             direction=self.direction,
             include_connected=include_connected,
+            only_connected=only_connected,
+            include_connections=True,
         )
         q = (self.edit_search.text() or "").lower()
         for cat, items in cats.items():
@@ -784,16 +815,27 @@ class AttributePickerDialog(QtWidgets.QDialog):
             for data in items:
                 attr, present_all = data[0], data[1]
                 has_non_settable = data[2] if len(data) > 2 else False
+                connections = data[3] if len(data) > 3 else {}
                 if q and q not in attr.lower():
                     continue
                 child = QtWidgets.QTreeWidgetItem(top)
                 child.setText(0, attr)
                 child.setData(0, QtCore.Qt.UserRole, attr)
+                child.setData(0, QtCore.Qt.UserRole + 1, connections)
                 if not present_all:
                     f = child.font(0); f.setItalic(True); child.setFont(0, f)
                 if has_non_settable:
                     child.setForeground(0, QtGui.QBrush(QtGui.QColor("#f1b16a")))
-                    child.setToolTip(0, "Attribute may already be connected or locked.")
+                tooltip_parts = []
+                if has_non_settable:
+                    tooltip_parts.append("Attribute may already be connected or locked.")
+                if connections:
+                    summary_lines = []
+                    for obj_name, plugs in sorted(connections.items()):
+                        summary_lines.append("{}:\n    {}".format(obj_name, "\n    ".join(plugs)))
+                    tooltip_parts.append("Connected to:\n{}".format("\n".join(summary_lines)))
+                if tooltip_parts:
+                    child.setToolTip(0, "\n\n".join(tooltip_parts))
             if top.childCount() == 0:
                 idx = self.tree.indexOfTopLevelItem(top)
                 self.tree.takeTopLevelItem(idx)
@@ -801,6 +843,52 @@ class AttributePickerDialog(QtWidgets.QDialog):
             self.tree.expandAll()
         else:
             self.tree.collapseAll()
+
+    def _on_show_connected_toggled(self, state):
+        if not state:
+            only_connected = getattr(self, "chk_only_connected", None)
+            if only_connected and only_connected.isChecked():
+                only_connected.blockSignals(True)
+                only_connected.setChecked(False)
+                only_connected.blockSignals(False)
+        self._fill_tree()
+
+    def _on_only_connected_toggled(self, state):
+        show_connected = getattr(self, "chk_show_connected", None)
+        if state and show_connected and not show_connected.isChecked():
+            show_connected.blockSignals(True)
+            show_connected.setChecked(True)
+            show_connected.blockSignals(False)
+        self._fill_tree()
+
+    def _on_tree_context_menu(self, pos):
+        item = self.tree.itemAt(pos)
+        if not item:
+            return
+        connections = item.data(0, QtCore.Qt.UserRole + 1) or {}
+        if not connections:
+            return
+        menu = QtWidgets.QMenu(self.tree)
+        act_show = menu.addAction("Show Connections")
+
+        def _show():
+            self._show_connections_dialog(item.text(0), connections)
+
+        act_show.triggered.connect(_show)
+        menu.exec_(self.tree.viewport().mapToGlobal(pos))
+
+    def _show_connections_dialog(self, attr_name, connections):
+        if not connections:
+            StyledMessageDialog.warning(self, "Connections", "No connections found.")
+            return
+        lines = []
+        for obj_name, plugs in sorted(connections.items()):
+            lines.append("{}:".format(obj_name))
+            for plug in plugs:
+                lines.append("  • {}".format(plug))
+        message = "Connections for '{}':\n\n{}".format(attr_name, "\n".join(lines))
+        dlg = StyledMessageDialog(self, "Connections", message)
+        dlg.exec_()
 
     def _get_selected_attr(self):
         it = self.tree.currentItem()
